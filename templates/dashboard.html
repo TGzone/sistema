@@ -1,0 +1,218 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | Lumina Gestão{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div>
+        <h1 class="page-title">Visão Geral</h1>
+        <p class="page-subtitle">Acompanhe os principais indicadores do seu ministério hoje.</p>
+    </div>
+    <div class="date-filter">
+        <i class="ph ph-calendar-blank"></i>
+        <span>Últimos 30 dias</span>
+        <i class="ph ph-caret-down"></i>
+    </div>
+</div>
+
+<div class="grid summary-cards">
+    <div class="card stat-card">
+        <div class="stat-header">
+            <div class="stat-icon blue">
+                <i class="ph ph-users"></i>
+            </div>
+            <span class="trend positive">
+                <i class="ph ph-trend-up"></i> +12%
+            </span>
+        </div>
+        <div class="stat-body">
+            <h3 class="stat-label">Total de Membros</h3>
+            <p class="stat-value">1.248</p>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-header">
+            <div class="stat-icon green">
+                <i class="ph ph-currency-dollar"></i>
+            </div>
+            <span class="trend positive">
+                <i class="ph ph-trend-up"></i> +8.5%
+            </span>
+        </div>
+        <div class="stat-body">
+            <h3 class="stat-label">Entradas (Mês)</h3>
+            <p class="stat-value">R$ 45.200</p>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-header">
+            <div class="stat-icon purple">
+                <i class="ph ph-users-three"></i>
+            </div>
+            <span class="trend neutral">
+                <i class="ph ph-minus"></i> 0%
+            </span>
+        </div>
+        <div class="stat-body">
+            <h3 class="stat-label">Ministérios Ativos</h3>
+            <p class="stat-value">14</p>
+        </div>
+    </div>
+
+    <div class="card stat-card">
+        <div class="stat-header">
+            <div class="stat-icon orange">
+                <i class="ph ph-calendar-check"></i>
+            </div>
+            <span class="trend neutral">
+                Próximos 7 dias
+            </span>
+        </div>
+        <div class="stat-body">
+            <h3 class="stat-label">Eventos Agendados</h3>
+            <p class="stat-value">3</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid charts-section">
+    <div class="card chart-card">
+        <div class="card-header">
+            <h2>Crescimento de Membros</h2>
+            <button class="icon-btn"><i class="ph ph-dots-three"></i></button>
+        </div>
+        <div class="chart-container">
+            <canvas id="membersChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card chart-card">
+        <div class="card-header">
+            <h2>Entradas Financeiras</h2>
+            <button class="icon-btn"><i class="ph ph-dots-three"></i></button>
+        </div>
+        <div class="chart-container">
+            <canvas id="financialChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid bottom-section">
+    <div class="card activities-card">
+        <div class="card-header">
+            <h2>Atividades Recentes</h2>
+            <a href="#" class="link-btn">Ver tudo</a>
+        </div>
+        <div class="activity-list">
+            <div class="activity-item">
+                <div class="activity-icon bg-blue-light">
+                    <i class="ph ph-user-plus text-blue"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-title"><strong>João Silva</strong> foi cadastrado como membro</p>
+                    <span class="activity-time">Há 2 horas</span>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon bg-green-light">
+                    <i class="ph ph-hand-coins text-green"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-title">Nova oferta registrada em <strong>Culto de Domingo</strong></p>
+                    <span class="activity-time">Há 5 horas</span>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon bg-gray-light">
+                    <i class="ph ph-pencil-simple text-gray"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-title">Dados de <strong>Ministério de Louvor</strong> atualizados</p>
+                    <span class="activity-time">Ontem às 14:30</span>
+                </div>
+            </div>
+            <div class="activity-item">
+                <div class="activity-icon bg-orange-light">
+                    <i class="ph ph-calendar-plus text-orange"></i>
+                </div>
+                <div class="activity-details">
+                    <p class="activity-title">Novo evento criado: <strong>Encontro de Jovens</strong></p>
+                    <span class="activity-time">Ontem às 09:15</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shortcuts-card">
+        <div class="card-header">
+            <h2>Atalhos Rápidos</h2>
+        </div>
+        <div class="shortcuts-grid">
+            <button class="shortcut-btn">
+                <div class="shortcut-icon blue"><i class="ph ph-user-plus"></i></div>
+                <span>Cadastrar Membro</span>
+            </button>
+            <button class="shortcut-btn">
+                <div class="shortcut-icon green"><i class="ph ph-receipt"></i></div>
+                <span>Registrar Oferta</span>
+            </button>
+            <button class="shortcut-btn">
+                <div class="shortcut-icon purple"><i class="ph ph-users-three"></i></div>
+                <span>Novo Grupo/Célula</span>
+            </button>
+            <button class="shortcut-btn">
+                <div class="shortcut-icon gray"><i class="ph ph-file-text"></i></div>
+                <span>Criar Relatório</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Configurações Globais dos Gráficos para visual clean
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b';
+    Chart.defaults.scale.grid.color = '#f1f5f9';
+    // Gráfico de Membros
+    const ctxMembers = document.getElementById('membersChart').getContext('2d');
+    
+    // Gradiente Laranja Mamão para o gráfico
+    let gradientOrange = ctxMembers.createLinearGradient(0, 0, 0, 300);
+    gradientOrange.addColorStop(0, 'rgba(255, 140, 97, 0.3)'); // Laranja com 30% de opacidade
+    gradientOrange.addColorStop(1, 'rgba(255, 140, 97, 0)');   // Transparente na base
+
+    new Chart(ctxMembers, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            datasets: [{
+                label: 'Membros Ativos',
+                data: [1150, 1180, 1195, 1210, 1230, 1248],
+                borderColor: '#FF8C61', /* Nossa cor principal Laranja Mamão */
+                backgroundColor: gradientOrange,
+                borderWidth: 2,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#FF8C61',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { display: false } },
+                y: { beginAtZero: false }
+            }
+        }
+    });
+
+</script>
+{% endblock %}

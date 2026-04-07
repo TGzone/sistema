@@ -1,0 +1,103 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<!-- Link para o CSS específico do módulo de igrejas -->
+<link rel="stylesheet" href="{% static 'assets/css/igrejas/igrejas.css' %}?v=2.3">
+{% endblock %}
+
+{% block content %}
+<div class="church-module">
+    <header class="module-header">
+        <div class="header-main">
+            <div class="breadcrumb">Principal <i class="ph ph-caret-right"></i> <span class="current">Unidades</span></div>
+            <h1>Gestão de Unidades</h1>
+            <p>Painel estratégico de monitoramento das congregações.</p>
+        </div>
+
+        <div class="header-right">
+            <div class="stats-group">
+                <div class="stat-card">
+                    <!-- Usamos .count para QuerySets do Django, é mais fiável que |length -->
+                    <span id="churchCount" class="stat-num">{{ igrejas.count }}</span>
+                    <span class="stat-desc">Igrejas</span>
+                </div>
+                <div class="stat-card">
+                    <!-- Total global de membros cadastrados no sistema -->
+                    <span class="stat-num">{{ total_membros }}</span>
+                    <span class="stat-desc">Membros</span>
+                </div> 
+            </div>
+            <!-- Link para a tela de cadastro de nova unidade -->
+            <a href="{% url 'igrejas:cadastro'%}" class="btn-add-unit">
+                <i class="ph-bold ph-plus"></i> Nova Unidade
+            </a>
+        </div>
+    </header>
+
+    <!-- Barra de filtros e pesquisa -->
+    <div class="control-bar-premium">
+        <div class="search-field">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="searchUnidade" placeholder="Pesquisar unidade ou pastor dirigente...">
+        </div>
+        <div class="filters-field">
+            <select id="filterRegiao">
+                <option value="todos">Todas as Regiões</option>
+            </select>
+            <select id="filterSaude">
+                <option value="todos">Status: Todos</option>
+                <option value="excellent">Excelente</option>
+                <option value="otimo">Ótimo</option>
+                <option value="bom">Bom</option>
+                <option value="estavel">Estável</option>
+                <option value="ruim">Ruim</option>
+                <option value="pessimo">Péssimo</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Grid de cards das igrejas -->
+    <div class="units-grid" id="unitsGrid">
+        {% for igreja in igrejas %}
+        <!-- Card clicável direcionando para o detalhe da unidade específica -->
+        <div class="unit-card saude-{{ igreja.status_saude }}" 
+            data-nome="{{ igreja.nome }}" 
+            data-saude="{{ igreja.status_saude }}"
+            onclick="window.location.href='{% url 'igrejas:unidade_detalhe' igreja.id %}'"
+            style="cursor: pointer;">
+            
+            <span class="health-label">{{ igreja.status_saude|upper }}</span>
+            
+            <div class="card-header">
+                <span class="badge-type">{{ igreja.tipo }}</span>
+            </div>
+            
+            <h3>{{ igreja.nome }}</h3>
+            <p class="pastor-name">
+                <i class="ph ph-user"></i> {{ igreja.pastor }}
+            </p>
+
+            <div class="card-footer">
+                <div class="mini-info" style="display: flex; gap: 12px;">
+                    <!-- Adicionado |default:0 para garantir que o número apareça mesmo se o banco retornar nulo -->
+                    <span><strong>{{ igreja.total_membros_unidade|default:0 }}</strong> Membros</span>
+                    <span><strong>{{ igreja.total_pastores_unidade|default:0 }}</strong> Pastores</span>
+                </div>
+                <a href="{% url 'igrejas:unidade_detalhe' igreja.id %}" class="btn-go" onclick="event.stopPropagation();">
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+        {% empty %}
+            <div class="no-data">Nenhuma unidade encontrada.</div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% block extra_js %}
+<!-- Script para os filtros dinâmicos da lista -->
+ <script src="{% static 'assets/js/igrejas/igrejas.js' %}?v=1.7"></script>
+{% endblock %}
+{% endblock %}

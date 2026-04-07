@@ -1,0 +1,50 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Relatórios | Lumina Gestão{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'assets/css/relatorios.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Relatórios</h1>
+        <p class="page-subtitle">Exporte dados em PDF ou Excel para impressão e análise.</p>
+    </div>
+</div>
+
+<div class="reports-category">
+    <h2><i class="ph ph-users"></i> Secretaria e Membros</h2>
+    <div class="reports-grid">
+        <div class="report-item">
+            <i class="ph ph-file-pdf report-icon"></i>
+            <div class="report-info">
+                <h4>Lista de Membros Ativos</h4>
+                <p>Gera um PDF com contatos</p>
+            </div>
+        </div>
+        <div class="report-item">
+            <i class="ph ph-cake report-icon"></i>
+            <div class="report-info">
+                <h4>Aniversariantes do Mês</h4>
+                <p>Lista organizada por dia</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reports-category">
+    <h2><i class="ph ph-currency-dollar"></i> Financeiro</h2>
+    <div class="reports-grid">
+        <div class="report-item">
+            <i class="ph ph-file-xls report-icon"></i>
+            <div class="report-info">
+                <h4>Balanço Mensal</h4>
+                <p>Planilha de Entradas e Saídas</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

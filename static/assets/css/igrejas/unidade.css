@@ -1,0 +1,357 @@
+/* ==========================================================================
+   VARIÁVEIS DE DESIGN SYSTEM (PADRÃO LUMINA)
+   ========================================================================== */
+:root {
+    --bg-sistema: #f1f5f9;
+    --cartao-bg: #ffffff;
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --success: #10b981;
+    --danger: #ef4444;
+}
+
+/* ==========================================================================
+   CONTAINER E GRID PRINCIPAL
+   ========================================================================== */
+.unidade-container {
+    padding: 30px;
+    background-color: var(--bg-sistema);
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+}
+
+.unidade-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 24px;
+    margin-top: 24px;
+    align-items: start;
+}
+
+/* ==========================================================================
+   BARRA DE MONITORAMENTO (TOPO)
+   ========================================================================== */
+.status-monitor-bar {
+    display: flex;
+    justify-content: space-between;
+    background: var(--cartao-bg);
+    padding: 20px 30px;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+}
+
+.monitor-item { display: flex; flex-direction: column; gap: 4px; }
+.monitor-item label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.monitor-item strong { font-size: 18px; color: var(--text-main); }
+.monitor-item .text-success { color: var(--success); }
+
+/* ==========================================================================
+   CARDS DASHBOARD
+   ========================================================================== */
+.glass-card {
+    background: var(--cartao-bg);
+    border-radius: 24px;
+    padding: 25px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.card-header h3 { 
+    font-size: 18px; 
+    font-weight: 800; 
+    color: var(--text-main); 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin: 0;
+}
+
+/* ==========================================================================
+   MINI LISTA DE MEMBROS
+   ========================================================================== */
+.mini-table-scroll {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid #f1f5f9;
+    border-radius: 12px;
+}
+
+.mini-table-scroll::-webkit-scrollbar { width: 6px; }
+.mini-table-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+.mini-table { width: 100%; border-collapse: collapse; }
+.mini-table th { 
+    position: sticky; top: 0; background: #f8fafc; z-index: 10;
+    text-align: left; font-size: 11px; color: var(--text-muted); padding: 12px;
+}
+
+.mini-row td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f8fafc; }
+
+.tag-mini { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; }
+.type-membro { background: var(--primary-light); color: var(--primary); }
+
+/* ==========================================================================
+   BOTÕES DE COMANDO (SIDEBAR)
+   ========================================================================== */
+.botoes-comando { display: flex; flex-direction: column; gap: 12px; }
+
+.btn-cmd {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: 0.2s;
+}
+
+.btn-cmd.primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+.btn-cmd.secondary { background: white; color: var(--text-main); border: 1px solid var(--border); }
+.btn-cmd.danger { background: #fee2e2; color: var(--danger); }
+
+.btn-cmd:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+/* ==========================================================================
+   MODAL SYSTEM & LAZY LOADING
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-content {
+    background: #fff;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loader de Busca */
+.loader-mini {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    margin: 20px auto;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Placeholder de Busca */
+.search-placeholder {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.search-placeholder i { font-size: 40px; margin-bottom: 10px; opacity: 0.3; }
+.search-placeholder p { font-size: 14px; }
+
+/* Estilo das Opções de Pastor */
+.pastor-option {
+    display: flex; align-items: center; gap: 15px; padding: 12px;
+    border-radius: 12px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
+}
+.pastor-option:hover { background: var(--bg-sistema); border-color: var(--border); }
+
+.pastor-avatar {
+    width: 40px; height: 40px; background: var(--primary); color: #fff;
+    border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+
+.events-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 15px;
+}
+
+.event-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid transparent;
+    transition: 0.3s;
+}
+
+.event-item:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.event-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    padding: 8px;
+    border-radius: 12px;
+    min-width: 50px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.event-date strong { font-size: 18px; color: var(--primary); }
+.event-date span { font-size: 10px; font-weight: 800; color: var(--text-muted); }
+
+.event-details { flex: 1; }
+.event-details strong { display: block; font-size: 14px; color: var(--text-main); }
+.event-details p { font-size: 12px; color: var(--text-muted); margin: 2px 0 0; }
+
+.event-tag {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+.event-tag.cult { background: #dcfce7; color: #16a34a; }
+.event-tag.social { background: #fef9c3; color: #854d0e; }
+
+/* ==========================================================================
+   DRAWER SYSTEM (PADRÃO LATERAL LUMINA)
+   ========================================================================== */
+
+/* Overlay de fundo */
+.drawer-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.4); 
+    backdrop-filter: blur(2px); 
+    opacity: 0; 
+    visibility: hidden; 
+    transition: 0.3s ease; 
+    z-index: 1000; 
+}
+
+/* O Card que desliza */
+.drawer-card { 
+    position: fixed; 
+    top: 0; 
+    right: -450px; /* Escondido fora da tela */
+    width: 450px; 
+    height: 100%;
+    background: var(--cartao-bg); 
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 1001; 
+    display: flex; 
+    flex-direction: column;
+}
+
+/* Estados de Abertura */
+.drawer-card.open { right: 0; }
+.drawer-overlay.open { opacity: 1; visibility: visible; }
+
+/* Cabeçalho do Drawer */
+.drawer-header { 
+    padding: 2rem; 
+    border-bottom: 1px solid var(--border); 
+    position: relative; 
+    text-align: center;
+}
+
+.close-drawer { 
+    position: absolute; 
+    right: 20px; 
+    top: 20px; 
+    background: none; 
+    border: none; 
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    color: var(--text-muted); 
+}
+
+.profile-avatar { 
+    width: 64px; 
+    height: 64px; 
+    border-radius: 18px; 
+    background: var(--primary-light); 
+    color: var(--primary); 
+    margin: 0 auto 1rem;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.5rem; 
+}
+
+/* Conteúdo e Inputs */
+.drawer-content { 
+    padding: 2rem; 
+    flex: 1; 
+    overflow-y: auto; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 1.5rem; 
+}
+
+.input-group { display: flex; flex-direction: column; gap: 6px; }
+.input-group label { 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: var(--text-muted); 
+    text-transform: uppercase; 
+}
+
+.input-group input, 
+.input-group select, 
+.input-group textarea {
+    width: 100%; 
+    padding: 12px; 
+    border: 1px solid var(--border); 
+    border-radius: 10px; 
+    outline: none;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.input-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+/* Rodapé fixo */
+.drawer-footer { 
+    padding: 1.5rem 2rem; 
+    border-top: 1px solid var(--border); 
+    display: flex; 
+    justify-content: space-between; 
+    gap: 12px; 
+    background: #f8fafc;
+}

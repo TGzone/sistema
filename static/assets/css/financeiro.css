@@ -1,0 +1,24 @@
+/* ==========================================================================
+   Módulo: FINANCEIRO
+   ========================================================================== */
+.finance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+
+.balance-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); }
+.balance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; }
+.balance-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+
+/* Cores específicas do financeiro */
+.icon-income { background: var(--success-light); color: var(--success); }
+.icon-expense { background: #FEE2E2; color: #EF4444; } /* Vermelho suave */
+.icon-total { background: var(--primary-light); color: var(--primary); }
+
+.balance-amount { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+.amount-pos { color: var(--success); }
+.amount-neg { color: #EF4444; }
+
+.transaction-list { display: flex; flex-direction: column; gap: 0; }
+.transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--bg-body); }
+.transaction-item:last-child { border-bottom: none; }
+.tx-info h4 { font-size: 0.875rem; color: var(--text-main); font-weight: 500; }
+.tx-info p { font-size: 0.75rem; color: var(--text-muted); }
+.tx-value { font-weight: 600; font-size: 0.875rem; }

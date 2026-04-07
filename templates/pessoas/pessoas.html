@@ -1,0 +1,263 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/pessoas/pessoas.css' %}?v=2">
+{% endblock %}
+
+{% block content %}
+<div class="people-module">
+    <header class="people-header">
+        <div class="header-info">
+            <h1>Pessoas</h1>
+            <p>Gestão completa de membros, visitantes e liderança</p>
+        </div>
+        <a href="{% url 'pessoas:cadastro' %}" class="btn-primary" style="text-decoration: none;">
+            <i class="ph ph-user-plus"></i> Nova Pessoa
+        </a>
+    </header>
+
+    <div class="action-bar">
+        <div class="search-wrapper">
+            <i class="ph ph-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="Buscar por nome, telefone ou e-mail...">
+        </div>
+        <div class="stats-mini">
+            <span class="label">Total encontrados:</span>
+            <strong id="totalCounter">{{ pessoas|length|default:"0" }}</strong>
+        </div>
+    </div>
+
+    <nav class="people-filter">
+        <button class="filter-btn active" data-category="todos">Todos</button>
+        <button class="filter-btn" data-category="pastor">Pastores</button>
+        <button class="filter-btn" data-category="presbitero">Presbíteros</button>
+        <button class="filter-btn" data-category="evangelista">Evangelistas</button>
+        <button class="filter-btn" data-category="missionario">Missionários</button>
+        <button class="filter-btn" data-category="membro">Membros</button>
+        <button class="filter-btn" data-category="congregado">Congregados</button>
+        <button class="filter-btn" data-category="visitante">Visitantes</button>
+        <button class="filter-btn" data-category="kids">Kids</button>
+    </nav>
+
+    <div class="table-container">
+        <table class="people-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Telefone</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Idade</th>
+                    <th class="text-right">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="peopleTableBody">
+                {% for p in pessoas %}
+                <tr class="person-row {% if not p.ativo %}inactive-row{% endif %}" 
+                    data-id="{{ p.id }}"
+                    data-category="{{ p.tipo_slug|lower|slugify|default:'outros' }}">
+                    
+                    <td>
+                        <div class="user-info-cell">
+                            <div class="avatar-circle">{{ p.nome|slice:":2"|upper }}</div>
+                            <div style="display: flex; flex-direction: column;">
+                                <span class="user-name">{{ p.nome }}</span>
+                                {% if not p.ativo %}
+                                    <span class="inactive-badge">
+                                        <i class="ph ph-warning-circle"></i> Desativado
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+
+                    <td class="wa-highlight">
+                        {% if p.telefone %}
+                            <a href="https://wa.me/55{{ p.telefone|cut:' '|cut:'-'|cut:'('|cut:')' }}" target="_blank" class="wpp-link" title="Chamar no WhatsApp">
+                                <i class="ph ph-whatsapp-logo"></i> {{ p.telefone }}
+                            </a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    
+                    <td>
+                        <span class="type-tag {{ p.tipo_slug }}">{{ p.tipo_nome }}</span>
+                    </td>
+                    <td>
+                        {% if p.status_acompanhamento %}
+                        <span class="status-tag {{ p.status_acompanhamento }}">
+                            {{ p.get_status_acompanhamento_display }}
+                        </span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td>{{ p.idade|default:"-" }}</td>
+                    <td class="table-actions">
+                        <button class="action-btn action-btn-view" onclick="peopleModule.openDrawer('{{ p.id }}')" title="Visualizar">
+                           <i class="ph ph-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="drawer-card" id="personDrawer">
+        <header class="drawer-header">
+            <button class="close-drawer" id="closeDrawer"><i class="ph ph-x"></i></button>
+            <div class="drawer-profile">
+                <div class="profile-avatar" id="drawerAvatar"></div>
+                <h2 id="drawerName"></h2>
+                <div class="profile-tags">
+                    <span class="type-tag" id="drawerTypeTag"></span>
+                    <span class="status-pill" id="drawerStatusPill"></span>
+                </div>
+            </div>
+        </header>
+
+        <form class="drawer-content" method="POST" id="drawerForm">
+            {% csrf_token %}
+            
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" id="drawerNameInput" required>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Sexo</label>
+                    <select name="sexo" id="drawerSexo">
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tipo (Categoria)</label>
+                    <select name="tipo" id="drawerTipo">
+                        <option value="visitante">Visitante</option>
+                        <option value="membro">Membro</option>
+                        <option value="pastor">Pastor</option>
+                        <option value="presbitero">Presbítero</option>
+                        <option value="evangelista">Evangelista</option>
+                        <option value="missionario">Missionário</option>
+                        <option value="congregado">Congregado</option>
+                        <option value="kids">Kids</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" id="drawerEmail">
+                </div>
+                <div class="input-group">
+                    <label>Telefone</label>
+                    <input type="text" name="telefone" id="drawerTelefone" placeholder="(00) 00000-0000">
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" name="data_nascimento" id="drawerNascimento">
+                </div>
+                <div class="input-group">
+                    <label>Estado Civil</label>
+                    <select name="estado_civil" id="drawerEstadoCivil">
+                        <option value="solteiro">Solteiro(a)</option>
+                        <option value="casado">Casado(a)</option>
+                        <option value="divorciado">Divorciado(a)</option>
+                        <option value="viuvo">Viúvo(a)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group" id="groupResponsavel" style="display: none;">
+                <label style="color: var(--primary); font-weight: 600;">Responsável / Tutor (Menores de 14 anos)</label>
+                <select name="responsavel" id="drawerResponsavel">
+                    <option value="">Nenhum</option>
+                    {% for pessoa in todas_pessoas %}
+                        <option value="{{ pessoa.id }}">{{ pessoa.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Status de Acompanhamento</label>
+                <select name="status_acompanhamento" id="drawerStatusAcomp">
+                    <option value="">Nenhum</option>
+                    <option value="novo">Novo convertido</option>
+                    <option value="discipulado">Em discipulado</option>
+                    <option value="afastado">Afastado</option>
+                    <option value="em_observacao">Em observação</option>
+                </select>
+            </div>
+
+            <h3 style="margin: 20px 0 10px; font-size: 14px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 5px;">Endereço</h3>
+            
+            <div class="form-row" style="display: grid; grid-template-columns: 3fr 1fr; gap: 10px;">
+                <div class="input-group">
+                    <label>Rua</label>
+                    <input type="text" name="rua" id="drawerRua">
+                </div>
+                <div class="input-group">
+                    <label>Nº</label>
+                    <input type="text" name="numero" id="drawerNumero">
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="input-group">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" id="drawerBairro">
+                </div>
+                <div class="input-group">
+                    <label>CEP</label>
+                    <input type="text" name="cep" id="drawerCep">
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                <div class="input-group">
+                    <label>Cidade</label>
+                    <input type="text" name="cidade" id="drawerCidade">
+                </div>
+                <div class="input-group">
+                    <label>Estado (UF)</label>
+                    <input type="text" name="estado" id="drawerEstado" maxlength="2">
+                </div>
+            </div>
+
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label>Igreja de Origem</label>
+                    <input type="text" name="igreja_origem" id="drawerIgreja">
+                </div>
+                <div class="input-group">
+                    <label>Ministério</label>
+                    <input type="text" name="ministerio" id="drawerMinisterio">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Observações / Histórico</label>
+                <textarea name="observacoes" id="drawerObservacoes" rows="3" placeholder="Notas sobre acompanhamento..."></textarea>
+            </div>
+
+            <div class="drawer-footer">
+                <button type="button" class="btn-danger-light" id="btnDesativar" style="display:none;">Desativar Membro</button>
+                <button type="button" class="btn-success-light" id="btnAtivar" style="display:none;">Reativar Membro</button>
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/pessoas/pessoas.js' %}?v=2"></script>
+{% endblock %}

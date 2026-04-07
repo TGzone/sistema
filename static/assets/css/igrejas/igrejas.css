@@ -1,0 +1,255 @@
+/* ==========================================================================
+   VARIÁVEIS E BASE
+   ========================================================================== */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
+    
+    /* Cores de Saúde */
+    --excellent: #22c55e;
+    --otimo: #86efac;
+    --bom: #3b82f6;
+    --estavel: #94a3b8;
+    --ruim: #f59e0b;
+    --pessimo: #ef4444;
+
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+}
+
+.church-module {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+}
+
+/* ==========================================================================
+   HEADER REFINADO (Dashboard Style)
+   ========================================================================== */
+.module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.header-main h1 { 
+    font-size: 32px; 
+    font-weight: 800; 
+    color: var(--text-main); 
+    letter-spacing: -1px; 
+    margin: 0;
+}
+
+.header-main p { 
+    color: var(--text-muted); 
+    font-size: 14px; 
+    margin-top: 4px; 
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.breadcrumb .current { color: var(--primary); font-weight: 700; }
+
+.header-right { display: flex; align-items: center; gap: 20px; }
+
+/* Grupo de Estatísticas no Header */
+.stats-group { 
+    display: flex; 
+    gap: 0; 
+    background: #fff; 
+    padding: 10px; 
+    border-radius: 14px; 
+    border: 1px solid var(--border-color); 
+}
+
+.stat-card { 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    padding: 0 20px; 
+}
+
+.stat-card:first-child { border-right: 1px solid var(--border-color); }
+
+.stat-num { font-size: 20px; font-weight: 800; color: var(--primary); }
+.stat-desc { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+/* Botão Nova Unidade */
+.btn-add-unit {
+    background: var(--primary); 
+    color: #fff; 
+    padding: 12px 24px; 
+    border-radius: 12px;
+    font-weight: 700; 
+    text-decoration: none; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px;
+    transition: 0.3s; 
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.btn-add-unit:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   BARRA DE CONTROLE PREMIUM (Busca e Filtros)
+   ========================================================================== */
+.control-bar-premium { 
+    display: flex; 
+    gap: 20px; 
+    background: #fff; 
+    padding: 12px; 
+    border-radius: 16px; 
+    border: 1px solid var(--border-color); 
+    margin-bottom: 30px; 
+}
+
+.search-field { flex: 1; position: relative; }
+.search-field i { 
+    position: absolute; 
+    left: 15px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: var(--text-muted); 
+}
+
+.search-field input { 
+    width: 100%; 
+    padding: 12px 15px 12px 45px; 
+    border: 1px solid #f1f5f9; 
+    background: #f8fafc; 
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.search-field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: #fff;
+}
+
+.filters-field { display: flex; gap: 10px; }
+.filters-field select {
+    padding: 10px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: #f8fafc;
+    color: var(--text-main);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   GRID E CARDS (Saúde no Topo)
+   ========================================================================== */
+.units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.unit-card {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 25px 20px 20px; /* Padding superior maior para a borda de saúde */
+    border: 1px solid var(--border-color);
+    border-top: 5px solid var(--estavel); /* Borda de saúde no TOPO */
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+}
+
+.unit-card:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 12px 20px rgba(0,0,0,0.08); 
+    border-color: var(--primary);
+}
+
+/* Variantes de Saúde na Borda Superior */
+.saude-excellent { border-top-color: var(--excellent) !important; }
+.saude-otimo { border-top-color: var(--otimo) !important; }
+.saude-bom { border-top-color: var(--bom) !important; }
+.saude-estavel { border-top-color: var(--estavel) !important; }
+.saude-ruim { border-top-color: var(--ruim) !important; }
+.saude-pessimo { border-top-color: var(--pessimo) !important; }
+
+/* Badge de Saúde (Texto dentro do card) */
+.health-label {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+.saude-excellent .health-label { background: #f0fdf4; color: #16a34a; }
+.saude-pessimo .health-label { background: #fef2f2; color: #dc2626; }
+.saude-estavel .health-label { background: #f1f5f9; color: #64748b; }
+
+/* Conteúdo Interno do Card */
+.unit-card h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
+.pastor-name { font-size: 13px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+.card-footer {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mini-info { font-size: 12px; color: var(--text-muted); display: flex; gap: 12px; }
+.mini-info strong { color: var(--text-main); font-weight: 700; }
+
+.btn-go { color: var(--text-muted); transition: 0.2s; }
+.unit-card:hover .btn-go { color: var(--primary); transform: translateX(3px); }
+
+/* ==========================================================================
+   DRAWER (GAVETA LATERAL)
+   ========================================================================== */
+.church-drawer {
+    position: fixed;
+    top: 0;
+    right: -550px;
+    width: 500px;
+    height: 100vh;
+    background: white;
+    z-index: 2000;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    transition: right 0.4s ease-in-out;
+}
+
+.church-drawer.open { right: 0; }
+
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    z-index: 1999;
+    transition: 0.3s;
+}
+
+.drawer-overlay.open { opacity: 1; visibility: visible; }

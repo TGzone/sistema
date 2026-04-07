@@ -1,0 +1,190 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/pessoas/cadastro.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="registration-wrapper">
+    <header class="registration-header"> 
+        <div class="header-info">
+            <h1>Nova Pessoa</h1>
+            <p>Preencha os dados básicos para iniciar o registro no sistema.</p>
+        </div>
+        <a href="{% if unidade_pre_selecionada %}{% url 'igrejas:unidade_detalhe' unidade_pre_selecionada %}{% else %}{% url 'pessoas:pessoas' %}{% endif %}" class="btn-ghost">
+           <i class="ph ph-arrow-left"></i> Voltar
+        </a>
+    </header>    
+
+    <form method="POST" class="registration-form">
+        {% csrf_token %}
+        
+        <section class="form-section">
+            <div class="section-header">
+                <i class="ph ph-identification-card"></i>
+                <h2>Dados Principais</h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="input-group full-width">
+                    <label>Nome Completo *</label>
+                    <input type="text" name="nome" placeholder="Ex: Tiago Aldemino" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Telefone *</label>
+                    <input type="text" name="telefone" id="phoneMask" placeholder="(00) 00000-0000" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Sexo *</label>
+                    <select name="sexo" required>
+                       <option value="">Selecione</option>
+                       <option value="M">Masculino</option>
+                       <option value="F">Feminino</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Data de Nascimento *</label>
+                    <input type="date" name="data_nascimento" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Tipo*</label>
+                    <select name="tipo" id="tipoPessoa" required>
+                        <option value="visitante">Visitante</option>
+                        <option value="membro" selected>Membro</option>
+                        <option value="congregado">Congregado</option>
+                        <option value="kids">Kids</option>
+                        <option value="pastor">Pastor</option>
+                        <option value="presbitero">Presbítero</option>
+                        <option value="evangelista">Evangelista</option>
+                        <option value="missionario">Missionário</option>
+                        <option value="obreiro">Obreiro</option>
+                    </select>
+                </div>
+
+                <div class="input-group full-width" style="display: flex; align-items: center; gap: 10px; padding: 10px 0;">
+                    <input type="checkbox" name="membro_desta_igreja" id="membroCheck" 
+                           {% if unidade_pre_selecionada %} checked {% endif %} 
+                           style="width: 20px; height: 20px; cursor: pointer;">
+                    <label for="membroCheck" style="margin: 0; cursor: pointer; font-weight: 700; color: var(--primary);">
+                        Vincular à unidade atual?
+                    </label>
+                </div>
+
+                <div class="input-group full-width" id="unidadeGroup" style="display: none; border: 1px dashed var(--primary); padding: 15px; border-radius: 8px;">
+                    <label>Pesquisar Nova Unidade / Igreja *</label>
+                    <input type="text" id="igrejaSearch" list="igrejasList" placeholder="Digite o nome da outra igreja..." class="form-control" autocomplete="off">
+                    
+                    <input type="hidden" name="unidade" id="unidade_id_hidden" value="{{ unidade_pre_selecionada|default:'' }}">
+
+                    <datalist id="igrejasList">
+                        {% for igreja in igrejas %}
+                            <option data-id="{{ igreja.id }}" value="{{ igreja.nome }}"></option>
+                        {% endfor %}
+                    </datalist>
+                </div>
+
+                <div class="input-group" id="groupResponsavel" style="display: none;">
+                    <label>Responsável</label>
+                    <input type="text" name="responsavel" placeholder="Nome do responsável">
+                </div>
+
+                <div class="input-group">
+                    <label>Igreja de Origem</label>
+                    <input type="text" name="igreja_origem" placeholder="Congregação anterior">
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section secondary">
+            <div class="section-header">
+                <i class="ph ph-map-pin"></i>
+                <h2>Endereço</h2>
+            </div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>CEP</label>
+                    <input type="text" name="cep" id="cepMask" placeholder="00000-000">
+                </div>
+                <div class="input-group"></div>
+                <div class="input-group full-width">
+                    <label>Rua</label>
+                    <input type="text" name="rua" id="logradouro" placeholder="Rua / Avenida">
+                </div>
+                <div class="input-group">
+                    <label>Número</label>
+                    <input type="text" name="numero" id="numero" placeholder="Nº">
+                </div>
+                <div class="input-group">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" id="bairro" placeholder="Bairro">
+                </div>
+                <div class="input-group">
+                    <label>Cidade</label>
+                    <input type="text" name="cidade" id="localidade" placeholder="Cidade">
+                </div>
+                <div class="input-group">
+                    <label>Estado</label>
+                    <input type="text" name="estado" id="uf" placeholder="UF" maxlength="2">
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section secondary">
+            <div class="section-header">
+                <i class="ph ph-plus-circle"></i>
+                <h2>Dados Complementares</h2>
+            </div>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" name="email" placeholder="email@exemplo.com">
+                </div>
+                <div class="input-group">
+                    <label>Estado Civil</label>
+                    <select name="estado_civil">
+                        <option value="">Selecione</option>
+                        <option value="solteiro">Solteiro(a)</option>
+                        <option value="casado">Casado(a)</option>
+                        <option value="divorciado">Divorciado(a)</option>
+                        <option value="viuvo">Viúvo(a)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Ministério que participa</label>
+                    <input type="text" name="ministerio" placeholder="Ex: Louvor, Infantil...">
+                </div>
+                <div class="input-group">
+                    <label>Status de Acompanhamento</label>
+                    <select name="status_acompanhamento">
+                        <option value="">Nenhum</option>
+                        <option value="novo" selected>Novo convertido</option>
+                        <option value="recorrente">Visitante recorrente</option>
+                        <option value="discipulado">Em discipulado</option>
+                        <option value="desigrejado">Desigrejado</option>
+                    </select>
+                </div>
+                <div class="input-group full-width">
+                    <label>Observações / Histórico</label>
+                    <textarea name="observacoes" rows="4" placeholder="Algum detalhe importante..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <a href="{% url 'pessoas:pessoas' %}" class="btn-ghost">Cancelar</a>
+            <button type="submit" class="btn-save">
+                <i class="ph ph-check"></i> Salvar Cadastro
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/pessoas/cadastro.js' %}"></script>
+{% endblock %}

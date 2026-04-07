@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestão Ministerial{% endblock %}</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link rel="stylesheet" href="{% static 'assets/css/base/base.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-icon">
+                    <i class="ph-fill ph-church"></i>
+                </div>
+                <span class="logo-text">Gean<strong>Gestão</strong></span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="ph ph-squares-four"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <a href="{% url 'pessoas:lista' %}" class="nav-item {% if request.resolver_match.app_name == 'pessoas' %}active{% endif %}">
+                  <i class="ph ph-users"></i>
+                   <span>Pessoas</span>
+                </a>
+
+                <a href="{% url 'financeiro' %}" class="nav-item {% if request.resolver_match.url_name == 'financeiro' %}active{% endif %}">
+                    <i class="ph ph-currency-dollar"></i>
+                    <span>Financeiro</span>
+                </a>
+
+                <a href="{% url 'igrejas:lista' %}" class="nav-item {% if request.resolver_match.app_name == 'igrejas' %}active{% endif %}">
+                    <i class="ph ph-users-three"></i>
+                    <span>Igrejas</span>
+                </a>
+
+                <a href="{% url 'relatorios' %}" class="nav-item {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}">
+                    <i class="ph ph-chart-line-up"></i>
+                    <span>Relatórios</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item">
+                    <i class="ph ph-gear"></i>
+                    <span>Configurações</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="main-wrapper">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="mobile-menu-btn">
+                        <i class="ph ph-list"></i>
+                    </button>
+                    <div class="search-box">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <input type="text" placeholder="Buscar membros, transações...">
+                    </div>
+                </div>
+                
+                <div class="topbar-right">
+                    <button class="icon-btn notification-btn">
+                        <i class="ph ph-bell"></i>
+                        <span class="badge"></span>
+                    </button>
+                    <div class="user-profile">
+                        <div class="avatar">
+                            <span>AD</span>
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">Admin Sistema</span>
+                            <span class="user-role">tiago.ald</span>
+                        </div>
+                        <i class="ph ph-caret-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </main>
+    </div>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

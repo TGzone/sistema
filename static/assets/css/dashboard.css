@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Variáveis CSS (Paleta de Azuis Profissionais)
+   ========================================================================== */
+:root {
+    /* 1. Cores de Fundo */
+    --bg-body: #F8FAFC;    /* Off-white azulado bem leve */
+    --bg-surface: #FFFFFF; /* Branco puro */
+    
+    /* 2. Cor Principal (Azul Royal Corporativo) */
+    --primary: #2563eb;        /* Azul principal vibrante */
+    --primary-hover: #2563eb;  /* Azul um pouco mais escuro */
+    --primary-light: #EFF6FF;  /* Fundo azul leitoso para ícones e estados ativos */
+    
+    /* 3. Cores Secundárias */
+    --success: #10B981;
+    --success-light: #ECFDF5;
+    
+    --warning: #F59E0B;
+    --warning-light: #FFFBEB;
+    
+    --purple: #6366F1;
+    --purple-light: #EEF2FF;
+    
+    /* 4. Cores de Texto e Linhas */
+    --text-main: #0F172A;   /* Slate 900 (Excelente contraste) */
+    --text-muted: #64748B;  /* Slate 500 */
+    --text-light: #94A3B8;  /* Slate 400 */
+    --border-color: #E2E8F0; /* Cor de borda padrão */
+    
+    /* 5. Estrutura */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --transition: all 0.2s ease-in-out;
+}
+
+/* Logo com gradiente azul */
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--primary), #60A5FA);
+    color: white;
+    border-radius: var(--radius-md);
+    font-size: 1.25rem;
+}
+
+/* Configurações Globais */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Layout */
+.app-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background-color: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+}
+
+.sidebar-header {
+    height: 72px;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    gap: 0.75rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.nav-item:hover {
+    background-color: var(--bg-body);
+    color: var(--primary);
+}
+
+.nav-item.active {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+/* Topbar */
+.topbar {
+    height: 72px;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--bg-body);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-lg);
+    width: 300px;
+    border: 1px solid transparent;
+}
+
+.search-box:focus-within {
+    border-color: var(--primary);
+    background-color: var(--bg-surface);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Content Area */
+.content-area {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Cards */
+.card {
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+}
+
+/* Icon Buttons no Header do Card */
+.stat-icon.blue { background-color: var(--primary-light); color: var(--primary); }

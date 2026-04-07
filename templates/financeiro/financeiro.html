@@ -1,0 +1,64 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Financeiro | Lumina Gestão{% endblock %}
+
+{% block extrastyle %}
+<link rel="stylesheet" href="{% static 'assets/css/financeiro.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Financeiro</h1>
+        <p class="page-subtitle">Controle de dízimos, ofertas e despesas.</p>
+    </div>
+    <div class="header-actions">
+        <button class="btn btn-primary"><i class="ph ph-plus"></i> Nova Transação</button>
+    </div>
+</div>
+
+<div class="finance-grid">
+    <div class="balance-card">
+        <div class="balance-header">
+            <span>Entradas (Mês)</span>
+            <div class="balance-icon icon-income"><i class="ph ph-arrow-down-left"></i></div>
+        </div>
+        <div class="balance-amount amount-pos">R$ 12.450,00</div>
+    </div>
+    <div class="balance-card">
+        <div class="balance-header">
+            <span>Saídas (Mês)</span>
+            <div class="balance-icon icon-expense"><i class="ph ph-arrow-up-right"></i></div>
+        </div>
+        <div class="balance-amount amount-neg">R$ 3.200,00</div>
+    </div>
+    <div class="balance-card">
+        <div class="balance-header">
+            <span>Saldo Atual</span>
+            <div class="balance-icon icon-total"><i class="ph ph-bank"></i></div>
+        </div>
+        <div class="balance-amount">R$ 9.250,00</div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-toolbar"><h3>Últimas Transações</h3></div>
+    <div class="transaction-list">
+        <div class="transaction-item">
+            <div class="tx-info">
+                <h4>Dízimo - Maria Almeida</h4>
+                <p>18/03/2026 • Transferência PIX</p>
+            </div>
+            <div class="tx-value amount-pos">+ R$ 500,00</div>
+        </div>
+        <div class="transaction-item">
+            <div class="tx-info">
+                <h4>Conta de Energia (Igreja Sede)</h4>
+                <p>15/03/2026 • Pagamento de Boleto</p>
+            </div>
+            <div class="tx-value amount-neg">- R$ 450,00</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

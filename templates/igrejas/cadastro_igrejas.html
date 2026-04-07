@@ -1,0 +1,152 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/igrejas/cadastro_igrejas.css' %}?v=1.1">
+{% endblock %}
+
+{% block content %}
+<div class="registration-wrapper">
+    <header class="registration-header"> 
+        <div class="header-info">
+            <div class="breadcrumb">
+                <a href="{% url 'igrejas:lista' %}">Igrejas</a> 
+                <i class="ph ph-caret-right"></i> 
+                <span>Nova Unidade</span>
+            </div>
+            <h1>Nova Unidade</h1>
+            <p>Cadastre uma nova igreja ou congregação para o Ministério Vila Bela.</p>
+        </div>
+
+        <a href="{% url 'igrejas:lista' %}" class="btn-back-header">
+            <i class="ph ph-arrow-left"></i>
+            <span>Voltar para Lista</span>
+        </a>
+    </header>
+
+    <form method="POST" class="registration-form">
+        {% csrf_token %}
+        
+        <section class="form-section">
+            <div class="section-header">
+                <i class="ph ph-church"></i>
+                <h2>Dados da Unidade</h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="input-group full-width">
+                    <label>Nome da Unidade *</label>
+                    <input type="text" name="nome" placeholder="Ex: Vila Bela - Sede PDB" required>
+                </div>
+
+                <div class="input-group">
+                    <label>CNPJ (Opcional)</label>
+                    <input type="text" name="cnpj" id="cnpjMask" placeholder="00.000.000/0000-00">
+                </div>
+
+                <div class="input-group">
+                    <label>Tipo de Unidade *</label>
+                    <select name="tipo" required>
+                       <option value="SEDE">Sede</option>
+                       <option value="FILIAL" selected>Congregação / Filial</option>
+                       <option value="PONTO">Ponto de Pregação</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Data de Fundação</label>
+                    <input type="date" name="data_fundacao">
+                </div>
+
+                <div class="input-group">
+                    <label>Telefone de Contato</label>
+                    <input type="text" name="telefone" id="phoneMask" placeholder="(00) 00000-0000">
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section secondary">
+            <div class="section-header">
+                <i class="ph ph-map-pin"></i>
+                <h2>Endereço da Unidade</h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>CEP</label>
+                    <input type="text" name="cep" id="cep" placeholder="00000-000" maxlength="9">
+                </div>
+
+                <div class="input-group">
+                    <label>País</label>
+                    <input type="text" name="pais" id="pais" value="Brasil">
+                </div>
+
+                <div class="input-group" style="grid-column: span 2;">
+                    <label>Rua</label>
+                    <input type="text" name="rua" id="logradouro" placeholder="Rua / Avenida">
+                </div>
+
+                <div class="input-group">
+                    <label>Número</label>
+                    <input type="text" name="numero" placeholder="Nº">
+                </div>
+
+                <div class="input-group">
+                    <label>Bairro</label>
+                    <input type="text" name="bairro" id="bairro" placeholder="Bairro">
+                </div>
+
+                <div class="input-group">
+                    <label>Cidade</label>
+                    <input type="text" name="cidade" id="localidade" placeholder="Cidade">
+                </div>
+
+                <div class="input-group">
+                    <label>Estado</label>
+                    <input type="text" name="estado" id="uf" placeholder="UF" maxlength="2">
+                </div>
+            </div>
+        </section>
+
+        <section class="form-section secondary">
+            <div class="section-header">
+                <i class="ph ph-info"></i>
+                <h2>Informações Estruturais</h2>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Capacidade Sentada (Aprox.)</label>
+                    <input type="number" name="capacidade" placeholder="Ex: 150">
+                </div>
+
+                <div class="input-group">
+                    <label>Status Operacional</label>
+                    <select name="status">
+                        <option value="ATIVO">Ativa</option>
+                        <option value="REFORMA">Em Reforma</option>
+                        <option value="INATIVA">Inativa / Fechada</option>
+                    </select>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Breve Histórico / Observações da Sede</label>
+                    <textarea name="observacoes" rows="4" placeholder="Detalhes sobre a fundação ou particularidades da região..."></textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="form-actions">
+            <a href="{% url 'igrejas:lista' %}" class="btn-back-header" style="border:none;">Cancelar</a>
+            <button type="submit" class="btn-save">
+                <i class="ph ph-check"></i> Finalizar Cadastro
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/igrejas/cadastro_igrejas.js' %}"></script>
+{% endblock %}

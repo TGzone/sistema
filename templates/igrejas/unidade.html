@@ -1,0 +1,193 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/igrejas/unidade.css' %}?v=5.7">
+<link rel="stylesheet" href="{% static 'assets/css/pessoas/pessoas.css' %}"> 
+{% endblock %}
+
+{% block content %}
+<div class="unidade-header-main" style="margin-bottom: 24px; display: flex; align-items: center; gap: 20px;">
+    <div class="unidade-icon-badge" style="width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 10px 15px -3px rgba(var(--primary-rgb), 0.4);">
+        <i class="ph-bold ph-church"></i>
+    </div>
+    <div class="unidade-title-group">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 850; color: var(--text-main); letter-spacing: -1px;">
+            {{ unidade.nome }}
+        </h1>
+        <p style="margin: 4px 0 0; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 6px;">
+            <i class="ph ph-map-pin"></i> {{ unidade.cidade|default:"Localização não definida" }} • {{ unidade.estado|default:"Distrito" }}
+        </p>
+    </div>
+</div>
+
+<div class="unidade-container">
+    <div class="status-monitor-bar">
+        <div class="monitor-item">
+            <label>Saúde Geral</label>
+            <span class="status-tag {{ unidade.status_saude }}">{{ unidade.get_status_saude_display|upper|default:"ESTÁVEL" }}</span>
+        </div>
+        <div class="monitor-item">
+            <label>Membros Ativos</label>
+            <strong class="text-primary">{{ membros_unidade.count }}</strong>
+        </div>
+        <div class="monitor-item">
+            <label>Capacidade</label>
+            <strong>{{ unidade.capacidade|default:"0" }} lug.</strong>    
+        </div>
+        <div class="monitor-item">
+            <label>Fundação</label>
+            <span>{{ unidade.data_fundacao|date:"d/m/Y"|default:"Não informada" }}</span>
+        </div>
+    </div>
+
+    <div class="unidade-grid">
+        <div class="main-content-column" style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <section class="glass-card">
+                <div class="card-header">
+                    <h3><i class="ph-bold ph-identification-badge"></i> Liderança Atual</h3>
+                    <button class="btn-text" onclick="unidadeModule.openDrawer('atribuir_pastor')" style="background:var(--primary-light); border:none; color:var(--primary); padding:6px 14px; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                        <i class="ph ph-user-switch"></i> Alterar Liderança
+                    </button>
+                </div>
+                <table class="premium-table" style="width:100%; border-collapse:collapse; margin-top:15px;">
+                    <thead>
+                        <tr style="text-align:left; font-size:12px; color:var(--text-muted); border-bottom:1px solid #eee;">
+                            <th style="padding-bottom:10px;">Líder</th>
+                            <th style="padding-bottom:10px;">Função</th>
+                            <th style="padding-bottom:10px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid #f9f9f9;">
+                            <td style="padding:15px 0; display:flex; align-items:center; gap:10px;">
+                                <div style="width:32px; height:32px; background:var(--primary); color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">
+                                    {{ unidade.pastor.nome|slice:":2"|upper|default:"??" }}
+                                </div>
+                                <span style="font-weight:600;">{{ unidade.pastor.nome|default:"Sem dirigente definido" }}</span>
+                            </td>
+                            <td>{{ unidade.pastor.get_tipo_display|default:"Pastor Dirigente" }}</td>
+                            <td><span style="background:#dcfce7; color:#16a34a; padding:4px 10px; border-radius:100px; font-size:11px; font-weight:700;">ATIVO</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="glass-card">
+                <div class="card-header">
+                    <h3><i class="ph-bold ph-calendar-check"></i> Cronograma Mensal</h3>
+                </div>
+                <div class="events-timeline" style="margin-top: 15px; display: flex; flex-direction: column; gap: 12px;">
+                    {% for evento in eventos %}
+                    <div class="event-item" style="display: flex; align-items: center; gap: 15px; background: #f8fafc; padding: 12px; border-radius: 16px;">
+                        <div class="event-date" style="display: flex; flex-direction: column; align-items: center; min-width: 50px; background: #fff; padding: 8px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <strong style="font-size: 18px; color: var(--primary);">{{ evento.data_hora|date:"d" }}</strong>
+                            <span style="font-size: 10px; font-weight: 800; color: var(--text-muted);">{{ evento.data_hora|date:"M"|upper }}</span>
+                        </div>
+                        <div class="event-details" style="flex: 1;">
+                            <strong style="display: block; font-size: 14px; color: var(--text-main);">{{ evento.nome }}</strong>
+                            <p style="margin: 2px 0 0; font-size: 12px; color: var(--text-muted);"><i class="ph ph-clock"></i> {{ evento.data_hora|date:"H:i" }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 20px;">Nenhum evento agendado.</p>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="glass-card unit-members-card">
+                <div class="card-header-mini" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div class="header-info" style="display: flex; align-items: center; gap: 12px;">
+                        <i class="ph-bold ph-users-three" style="font-size: 24px; color: var(--primary);"></i>
+                        <div class="title-group">
+                            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">Membros da Unidade</h3>
+                            <p style="margin: 0; font-size: 13px; color: var(--text-muted);">{{ membros_unidade.count }} pessoas vinculadas</p>
+                        </div>
+                    </div>
+                    <div class="mini-search-wrapper" style="position: relative;">
+                        <i class="ph ph-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                        <input type="text" id="miniSearchMembro" placeholder="Buscar..." style="padding: 8px 12px 8px 32px; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 13px; background: #f8fafc;">
+                    </div>
+                </div>
+                <div class="mini-table-scroll" style="max-height: 300px; overflow-y: auto; border: 1px solid #f1f5f9; border-radius: 12px;">
+                    <table class="mini-table" style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                            <tr style="text-align: left; font-size: 11px; text-transform: uppercase; color: #94a3b8;">
+                                <th style="padding: 12px;">Nome</th>
+                                <th style="padding: 12px;">Tipo</th> 
+                                <th style="padding: 12px; text-align: right;">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="miniPeopleBody">
+                            {% for p in membros_unidade %}
+                            <tr class="mini-row" data-nome="{{ p.nome|lower }}" style="border-bottom: 1px solid #f8fafc;">
+                                <td style="padding: 10px 12px;">
+                                    <span style="font-weight: 600; font-size: 13px;">{{ p.nome }}</span>
+                                </td>
+                                <td style="padding: 10px 12px;"><span class="tag-mini">{{ p.get_tipo_display }}</span></td>
+                                <td style="padding: 10px 12px; text-align: right;">
+                                    <button class="btn-eye-mini" onclick="window.location.href='/pessoas/perfil/{{ p.id }}'"><i class="ph ph-eye"></i></button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <aside class="unidade-section acoes">
+            <div class="botoes-comando">
+                <a href="{% url 'pessoas:cadastro' %}?unidade_id={{ unidade.id }}" class="btn-cmd primary">
+                    <i class="ph-bold ph-user-plus"></i> Novo Membro
+                </a>
+                
+                <button class="btn-cmd secondary" onclick="unidadeModule.openDrawer('remanejar')">
+                    <i class="ph-bold ph-arrows-left-right"></i> Remanejar Peça
+                </button>
+
+                <button class="btn-cmd secondary" onclick="unidadeModule.openDrawer('editar', {
+                    nome: '{{ unidade.nome|escapejs }}', 
+                    cnpj: '{{ unidade.cnpj|default:'' }}',
+                    telefone: '{{ unidade.telefone|default:'' }}',
+                    cidade: '{{ unidade.cidade|escapejs }}',
+                    bairro: '{{ unidade.bairro|escapejs }}',
+                    capacidade: '{{ unidade.capacidade|default:0 }}' 
+                })">
+                    <i class="ph-bold ph-pencil"></i> Editar Unidade
+                </button>
+
+                <button class="btn-cmd danger"><i class="ph-bold ph-warning-circle"></i> Intervenção</button>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer-card" id="unidadeDrawer">
+    <header class="drawer-header">
+        <button class="close-drawer" onclick="unidadeModule.closeDrawer()"><i class="ph ph-x"></i></button>
+        <div class="drawer-profile">
+            <div class="profile-avatar"><i id="drawerIcon" class="ph-bold ph-church"></i></div>
+            <h2 id="drawerTitle">Gerenciar Unidade</h2>
+            <p id="drawerSubtitle" style="color: var(--text-muted); font-size: 0.85rem;"></p>
+        </div>
+    </header>
+
+    <form class="drawer-content" method="POST" id="drawerForm" action="{% url 'igrejas:unidade_acoes' unidade.id %}">
+        {% csrf_token %}
+        <div id="dynamicFields">
+            </div>
+
+        <div class="drawer-footer">
+            <button type="button" class="btn-ghost" onclick="unidadeModule.closeDrawer()">Cancelar</button>
+            <button type="submit" class="btn-primary">Confirmar Ação</button>
+        </div>
+    </form>
+</aside>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/igrejas/unidade.js' %}?v=4.1"></script>
+{% endblock %}
