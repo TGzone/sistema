@@ -51,6 +51,13 @@
                     <i class="ph ph-chart-line-up"></i>
                     <span>Relatórios</span>
                 </a>
+                
+                <a href="{% url 'cultos:calendario' %}" 
+                  class="nav-item {% if 'cultos' in request.path %}active{% endif %}">
+                 <i class="ph ph-calendar-check"></i>
+                 <span>Cultos</span>
+                </a>
+ 
             </nav>
             
             <div class="sidebar-footer">

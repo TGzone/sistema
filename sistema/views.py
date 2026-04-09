@@ -27,3 +27,5 @@ def pastoral(request):
     # Se esse estiver solto na pasta templates, pode deixar assim
     return render(request, "pastoral.html")
 
+def cultos(request):
+    return render(request, "cultos/cultos.html")    

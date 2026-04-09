@@ -46,9 +46,10 @@
             
             <section class="glass-card">
                 <div class="card-header">
-                    <h3><i class="ph-bold ph-identification-badge"></i> Liderança Atual</h3>
+                    <h3><i class="ph-bold ph-identification-badge"></i> Pastor Atual </h3>
                     <button class="btn-text" onclick="unidadeModule.openDrawer('atribuir_pastor')" style="background:var(--primary-light); border:none; color:var(--primary); padding:6px 14px; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                        <i class="ph ph-user-switch"></i> Alterar Liderança
+                        <i class="ph ph-user-switch"></i> Alterar Pastor
+
                     </button>
                 </div>
                 <table class="premium-table" style="width:100%; border-collapse:collapse; margin-top:15px;">
@@ -127,7 +128,7 @@
                                 </td>
                                 <td style="padding: 10px 12px;"><span class="tag-mini">{{ p.get_tipo_display }}</span></td>
                                 <td style="padding: 10px 12px; text-align: right;">
-                                    <button class="btn-eye-mini" onclick="window.location.href='/pessoas/perfil/{{ p.id }}'"><i class="ph ph-eye"></i></button>
+                                    <button class="btn-eye-mini" onclick="pessoaModule.openDrawer('{{ p.id }}')"><i class="ph ph-pencil"></i></button>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -153,18 +154,50 @@
                     telefone: '{{ unidade.telefone|default:'' }}',
                     cidade: '{{ unidade.cidade|escapejs }}',
                     bairro: '{{ unidade.bairro|escapejs }}',
-                    capacidade: '{{ unidade.capacidade|default:0 }}' 
-                })">
+                    rua: '{{ unidade.rua|default:''|escapejs }}',
+                    numero: '{{ unidade.numero|default:'' }}',
+                    cep: '{{ unidade.cep|default:'' }}',
+                    capacidade: '{{ unidade.capacidade|default:0 }}',
+                    status: '{{ unidade.status }}',
+                    tipo: '{{ unidade.tipo|default:'FILIAL' }}',
+                    observacoes: '{{ unidade.observacoes|default:''|escapejs }}'})">
                     <i class="ph-bold ph-pencil"></i> Editar Unidade
                 </button>
-
-                <button class="btn-cmd danger"><i class="ph-bold ph-warning-circle"></i> Intervenção</button>
             </div>
-        </aside>
+         </aside>
     </div>
 </div>
 
-<div class="drawer-overlay" id="drawerOverlay"></div>
+<div class="drawer-overlay" id="personDrawerOverlay" onclick="pessoaModule.closeDrawer()"></div>
+<aside class="drawer-card" id="personDrawer">
+    <header class="drawer-header">
+        <button class="close-drawer" onclick="pessoaModule.closeDrawer()"><i class="ph ph-x"></i></button>
+        <div class="drawer-profile">
+            <div class="profile-avatar" id="drawerAvatar"></div>
+            <h2 id="drawerName"></h2>
+            <div class="profile-tags">
+                <span class="type-tag" id="drawerTypeTag"></span>
+                <span class="status-pill" id="drawerStatusPill"></span>
+            </div>
+        </div>
+    </header>
+
+    <form class="drawer-content" method="POST" id="personForm">
+        {% csrf_token %}
+        <div id="personFields">
+            <div class="input-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome" id="drawerNameInput" required>
+            </div>
+            </div>
+
+        <div class="drawer-footer">
+            <button type="submit" class="btn-primary">Salvar Alterações</button>
+        </div>
+    </form>
+</aside>
+
+<div class="drawer-overlay" id="drawerOverlay" onclick="unidadeModule.closeDrawer()"></div>
 <aside class="drawer-card" id="unidadeDrawer">
     <header class="drawer-header">
         <button class="close-drawer" onclick="unidadeModule.closeDrawer()"><i class="ph ph-x"></i></button>
@@ -175,9 +208,10 @@
         </div>
     </header>
 
-    <form class="drawer-content" method="POST" id="drawerForm" action="{% url 'igrejas:unidade_acoes' unidade.id %}">
+    <form class="drawer-content" method="POST" id="unidadeForm" action="{% url 'igrejas:unidade_acoes' unidade.id %}">
         {% csrf_token %}
-        <div id="dynamicFields">
+        <input type="hidden" name="acao_tipo" id="inputAcaoTipo">
+        <div id="dynamicFields">                             
             </div>
 
         <div class="drawer-footer">
@@ -186,8 +220,10 @@
         </div>
     </form>
 </aside>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'assets/js/igrejas/unidade.js' %}?v=4.1"></script>
+<script src="{% static 'assets/js/pessoas/pessoas.js' %}"></script>
+<script src="{% static 'assets/js/igrejas/unidade.js' %}?v=4.3"></script>
 {% endblock %}

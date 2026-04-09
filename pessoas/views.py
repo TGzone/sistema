@@ -86,6 +86,7 @@ def editar_pessoa(request, pk):
     if request.method == 'POST':
         unidade_escolhida = request.POST.get("unidade")
         
+        # 1. Dados Básicos
         pessoa.nome = request.POST.get('nome', pessoa.nome)
         pessoa.telefone = request.POST.get('telefone', pessoa.telefone)
         pessoa.email = request.POST.get('email', pessoa.email)
@@ -103,6 +104,7 @@ def editar_pessoa(request, pk):
         resp_id = request.POST.get('responsavel')
         pessoa.responsavel_id = resp_id if resp_id else None
         
+        # 2. Captura os dados de Endereço do formulário
         dados_end = {
             'rua': request.POST.get('rua'),
             'numero': request.POST.get('numero'),
@@ -112,27 +114,32 @@ def editar_pessoa(request, pk):
             'cep': request.POST.get('cep'),
         }
 
+        # 3. Lógica de Salvamento do Endereço (Blindada)
         if pessoa.endereco:
+            # Se já tem endereço, atualizamos apenas o que foi preenchido
             for campo, valor in dados_end.items():
-                setattr(pessoa.endereco, campo, valor)
+                if valor: # Só sobrescreve se o valor não for Nulo/Vazio
+                    setattr(pessoa.endereco, campo, valor)
             pessoa.endereco.save()
         else:
-            pessoa.endereco = Endereco.objects.create(**dados_end)
+            # Se não tem endereço e pelo menos a rua ou CEP foi enviado, criamos um novo
+            if dados_end['rua'] or dados_end['cep']:
+                pessoa.endereco = Endereco.objects.create(**dados_end)
         
         pessoa.save()
-        messages.success(request, "Dados atualizados!")
+        messages.success(request, f"Cadastro de {pessoa.nome} atualizado com sucesso!")
 
-        # Redireciona conforme a origem
+        # Redireciona conforme a origem (Unidade ou Lista Geral)
         if unidade_escolhida:
             return redirect("igrejas:unidade_detalhe", id=unidade_escolhida)
         return redirect("pessoas:pessoas")
     
+    # Se não for POST, renderiza a página de edição (caso usem via URL direta)
     return render(request, "pessoas/editar.html", {
         "pessoa": pessoa,
         "igrejas": Igreja.objects.all().order_by("nome"),
         "tipos": Pessoa.TIPO
     })
-
 def ativar_membro(request, pk):
     pessoa = get_object_or_404(Pessoa, pk=pk)
     pessoa.ativo = True

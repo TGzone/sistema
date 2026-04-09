@@ -5,9 +5,11 @@
 var unidadeModule = {
     init: function() {
         console.log("🚀 LuminaGestão: Inteligência da Unidade Ativada.");
+        
+        // 1. CAPTURA DOS ELEMENTOS COM IDs ÚNICOS
         this.drawer = document.getElementById('unidadeDrawer');
         this.overlay = document.getElementById('drawerOverlay');
-        this.form = document.getElementById('drawerForm');
+        this.unidadeForm = document.getElementById('unidadeForm');
         this.fields = document.getElementById('dynamicFields');
         
         this.initMiniSearch();
@@ -15,7 +17,7 @@ var unidadeModule = {
     },
 
     openDrawer: function(tipo, data = {}) {
-        // Redefine os elementos para garantir que o JS os encontre após mudanças no DOM
+        // Redefine os elementos para garantir captura no DOM
         this.drawer = document.getElementById('unidadeDrawer');
         this.overlay = document.getElementById('drawerOverlay');
         this.fields = document.getElementById('dynamicFields');
@@ -28,25 +30,57 @@ var unidadeModule = {
         this.fields.innerHTML = ""; 
         let html = `<input type="hidden" name="acao_tipo" value="${tipo}">`;
 
-        // --- FORMULÁRIO: EDITAR UNIDADE ---
+        // --- FORMULÁRIO: EDITAR UNIDADE (COMPLETO) ---
         if (tipo === 'editar') {
-            this.updateHeader("Editar Unidade", "Atualize os dados estruturais", "ph-church");
+            this.updateHeader("Editar Unidade", "Atualize os dados estruturais e localização", "ph-church");
             html += `
                 <div class="input-group">
                     <label>Nome da Unidade</label>
                     <input type="text" name="nome" value="${data.nome || ''}" required>
                 </div>
+
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="input-group"><label>CNPJ</label><input type="text" name="cnpj" value="${data.cnpj || ''}"></div>
                     <div class="input-group"><label>Telefone</label><input type="text" name="telefone" value="${data.telefone || ''}"></div>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div class="input-group"><label>Cidade</label><input type="text" name="cidade" value="${data.cidade || ''}"></div>
-                    <div class="input-group"><label>Bairro</label><input type="text" name="bairro" value="${data.bairro || ''}"></div>
-                </div>
+
                 <div class="input-group">
-                    <label>Capacidade (Lugares)</label>
-                    <input type="number" name="capacidade" value="${data.capacidade || 0}">
+                    <label>Rua / Logradouro</label>
+                    <input type="text" name="rua" value="${data.rua || ''}" placeholder="Nome da rua...">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group"><label>Número</label><input type="text" name="numero" value="${data.numero || ''}"></div>
+                    
+                    <div class="input-group">
+                        <label>CEP</label>
+                        <input type="text" name="cep" value="${data.cep || ''}" maxlength="9" oninput="unidadeModule.buscarCep(this.value)" placeholder="00000-000">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group"><label>Bairro</label><input type="text" name="bairro" value="${data.bairro || ''}"></div>
+                    <div class="input-group"><label>Cidade</label><input type="text" name="cidade" value="${data.cidade || ''}"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="input-group">
+                        <label>Status Operacional</label>
+                        <select name="status">
+                            <option value="ATIVO" ${data.status === 'ATIVO' ? 'selected' : ''}>Ativa</option>
+                            <option value="REFORMA" ${data.status === 'REFORMA' ? 'selected' : ''}>Em Reforma</option>
+                            <option value="INATIVA" ${data.status === 'INATIVA' ? 'selected' : ''}>Inativa</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Capacidade (Lugares)</label>
+                        <input type="number" name="capacidade" value="${data.capacidade || 0}">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Observações / Histórico</label>
+                    <textarea name="observacoes" rows="3" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">${data.observacoes || ''}</textarea>
                 </div>
             `;
         } 
@@ -72,7 +106,7 @@ var unidadeModule = {
         this.drawer.classList.add('open');
         this.overlay.classList.add('open');
 
-        // Ativa a busca global se o campo foi criado
+        // Ativa a busca se o campo existir
         if (document.getElementById('inputBuscaGlobal')) {
             this.initGlobalSearch();
         }
@@ -149,6 +183,55 @@ var unidadeModule = {
                 });
             };
         }
+    },
+
+    // A MÁGICA DO CEP AUTOMÁTICO AQUI
+    buscarCep: function(cepVal) {
+        // Primeiro, formatamos o CEP na tela (ex: 07115-000)
+        let v = cepVal.replace(/\D/g, '');
+        v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+        
+        const form = document.getElementById('unidadeForm');
+        const inputCep = form.querySelector('input[name="cep"]');
+        if(inputCep) inputCep.value = v;
+
+        // Só busca na API se tiver 8 números exatos
+        let cepLimpo = cepVal.replace(/\D/g, '');
+        if (cepLimpo.length !== 8) return;
+
+        const inputRua = form.querySelector('input[name="rua"]');
+        const inputBairro = form.querySelector('input[name="bairro"]');
+        const inputCidade = form.querySelector('input[name="cidade"]');
+        const inputNumero = form.querySelector('input[name="numero"]');
+
+        // Feedback de carregamento
+        if (inputRua) inputRua.value = "...";
+        if (inputBairro) inputBairro.value = "...";
+
+        fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.erro) {
+                    if (inputRua) inputRua.value = data.logradouro;
+                    if (inputBairro) inputBairro.value = data.bairro;
+                    if (inputCidade) inputCidade.value = data.localidade;
+                    
+                    // Joga o foco pro número
+                    if (inputNumero) {
+                        inputNumero.focus();
+                        inputNumero.style.borderColor = "var(--primary)";
+                    }
+                } else {
+                    if (inputRua) inputRua.value = "";
+                    if (inputBairro) inputBairro.value = "";
+                    alert("CEP não encontrado.");
+                }
+            })
+            .catch(err => {
+                console.error("Erro no ViaCEP:", err);
+                if (inputRua) inputRua.value = "";
+                if (inputBairro) inputBairro.value = "";
+            });
     }
 };
 

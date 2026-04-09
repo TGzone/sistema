@@ -122,8 +122,8 @@
             {% csrf_token %}
             
             <div class="input-group">
-                <label>Nome Completo</label>
-                <input type="text" name="nome" id="drawerNameInput" required>
+              <label>CEP</label>
+                <input type="text" name="cep" id="drawerCep" maxlength="9" onkeyup="peopleModule.mascaraCepDrawer(this)" onblur="peopleModule.buscarCepDrawer(this.value)" placeholder="00000-000">
             </div>
 
             <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -259,5 +259,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'assets/js/pessoas/pessoas.js' %}?v=2"></script>
+<script src="{% static 'assets/js/pessoas/pessoas.js' %}?v=3"></script>
 {% endblock %}

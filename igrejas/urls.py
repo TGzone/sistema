@@ -19,4 +19,5 @@ urlpatterns = [
     
     # 5. API de Busca de Liderança (Modal e Drawer Inteligente)
     path('api/busca-lideranca/', views.api_busca_lideranca, name='api_busca_lideranca'),
+
 ]

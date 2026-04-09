@@ -14,13 +14,55 @@ var peopleModule = window.peopleModule || {
         this.overlay = document.getElementById('drawerOverlay');
         this.closeBtn = document.getElementById('closeDrawer');
         this.btnDesativar = document.getElementById('btnDesativar');
-        this.btnAtivar = document.getElementById('btnAtivar'); // Novo
+        this.btnAtivar = document.getElementById('btnAtivar'); 
         this.drawerForm = document.getElementById('drawerForm');
 
         this.initFilters();
         this.initSearch();
         this.initDrawer();
         this.updateView();
+    }, 
+
+    // --- LÓGICA LIMPA IMPORTADA DO CADASTRO ---
+    mascaraCepDrawer: function(input) {
+        let v = input.value.replace(/\D/g, '');
+        v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+        input.value = v.substring(0, 9);
+    },
+
+    buscarCepDrawer: function(cepVal) {
+        const cep = cepVal.replace(/\D/g, '');
+        if (cep.length !== 8) return;
+
+        const inputRua = document.getElementById('drawerRua');
+        const inputBairro = document.getElementById('drawerBairro');
+        const inputCidade = document.getElementById('drawerCidade');
+        const inputEstado = document.getElementById('drawerEstado');
+        const inputNumero = document.getElementById('drawerNumero');
+
+        if (inputRua) inputRua.value = "Buscando...";
+        if (inputBairro) inputBairro.value = "Buscando...";
+
+        fetch(`https://viacep.com.br/ws/${cep}/json/`)
+            .then(response => response.json())
+            .then(dados => {
+                if (!("erro" in dados)) {
+                    if(inputRua) inputRua.value = dados.logradouro;
+                    if(inputBairro) inputBairro.value = dados.bairro;
+                    if(inputCidade) inputCidade.value = dados.localidade;
+                    if(inputEstado) inputEstado.value = dados.uf;
+                    if(inputNumero) inputNumero.focus();
+                } else {
+                    if(inputRua) inputRua.value = "";
+                    if(inputBairro) inputBairro.value = "";
+                    alert("CEP não encontrado.");
+                }
+            })
+            .catch(() => {
+                if(inputRua) inputRua.value = "";
+                if(inputBairro) inputBairro.value = "";
+                alert("Erro ao consultar o servidor ViaCEP.");
+            });
     },
 
     initFilters: function () {
@@ -91,7 +133,7 @@ var peopleModule = window.peopleModule || {
             fill('drawerObservacoes', pessoa.observacoes);
             fill('drawerStatusAcomp', pessoa.status_raw);
 
-            // 2. REGRA DO RESPONSÁVEL: Só mostra se for < 14 anos ou tipo Kids
+            // 2. REGRA DO RESPONSÁVEL
             const responsavelGroup = document.getElementById('groupResponsavel');
             const eMenor = pessoa.idade !== "-" && parseInt(pessoa.idade) < 14;
             
@@ -115,12 +157,11 @@ var peopleModule = window.peopleModule || {
                 fill('drawerCep', pessoa.endereco.cep);
             }
 
-            // 4. LÓGICA DE ATIVAÇÃO/DESATIVAÇÃO (Botões Dinâmicos)
+            // 4. LÓGICA DE ATIVAÇÃO/DESATIVAÇÃO
             if (this.btnAtivar && this.btnDesativar) {
                 if (pessoa.ativo) {
                     this.btnDesativar.style.display = 'block';
                     this.btnAtivar.style.display = 'none';
-                    // Configura clique de desativar
                     this.btnDesativar.onclick = () => {
                         if (confirm(`Deseja realmente desativar ${pessoa.nome}?`)) {
                             window.location.href = `/pessoas/desativar/${id}/`;
@@ -129,7 +170,6 @@ var peopleModule = window.peopleModule || {
                 } else {
                     this.btnDesativar.style.display = 'none';
                     this.btnAtivar.style.display = 'block';
-                    // Configura clique de reativar
                     this.btnAtivar.onclick = () => {
                         if (confirm(`Deseja reativar o membro ${pessoa.nome}?`)) {
                             window.location.href = `/pessoas/ativar/${id}/`;

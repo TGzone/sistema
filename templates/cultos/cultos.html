@@ -1,0 +1,123 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/cultos/cultos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cg-main-wrapper">
+    <div class="cg-layout-grid">
+        
+        <div class="cg-calendar-column">
+            <div class="cg-card">
+                <div class="cg-calendar-nav">
+                    <div class="cg-nav-group">
+                        <button class="cg-btn-icon"><i class="ph ph-caret-left"></i></button>
+                        <button class="cg-btn-icon"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                    <h2 class="cg-month-title">{{ mes_nome }} {{ ano }}</h2>
+                    <div class="cg-view-selector">
+                        <button class="cg-active">Mês</button>
+                        <button>Semana</button>
+                    </div>
+                </div>
+
+                <div class="cg-days-header">
+                    <span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span>
+                </div>
+
+                <div class="cg-days-grid">
+                    {% for semana in semanas %}
+                        {% for dia in semana %}
+                        <div class="cg-day-cell {% if dia == 0 %}cg-empty{% endif %} {% if dia == hoje.day and mes == hoje.month %}cg-today{% endif %}"
+                             data-dia="{{ dia }}" data-mes="{{ mes }}" data-ano="{{ ano }}">
+                            {% if dia != 0 %}
+                                <span class="cg-day-num">{{ dia }}</span>
+                                <div class="cg-event-box">
+                                    {% for d, lista in cultos_por_dia.items %}
+                                        {% if d == dia %}
+                                            {% for c in lista %}
+                                                <a href="{% url 'cultos:detalhe' c.id %}" 
+                                                   class="cg-event-pill" 
+                                                   style="border-left: 3px solid {{ c.cor_personalizada }}; background: {{ c.cor_personalizada }}15; color: {{ c.cor_personalizada }};">
+                                                    {{ c.horario|time:"H:i" }} {{ c.titulo|truncatechars:8 }}
+                                                </a>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="cg-sidebar-column">
+            <div class="cg-header-info">
+                <h1>Agenda Ministerial</h1>
+                <p>Controle e Monitoramento</p>
+                <button class="cg-btn-primary"><i class="ph ph-plus"></i> Novo Evento</button>
+            </div>
+
+            <div class="cg-card cg-p-20">
+                <h3 class="cg-side-title">Agendamento Rápido</h3>
+                <form action="{% url 'cultos:criar_culto' %}" method="POST" class="cg-form">
+                    {% csrf_token %}
+                    <input type="text" name="titulo" id="eventTitle" placeholder="Título..." required>
+                    <div class="cg-form-row">
+                        <input type="date" name="data" id="eventDate" value="{{ hoje|date:'Y-m-d' }}">
+                        <input type="time" name="horario" value="19:00">
+                    </div>
+                    <select name="tipo">
+                        <option value="culto_domingo">Culto de Domingo</option>
+                        <option value="doutrina">Doutrina</option>
+                        <option value="evento_especial">Evento Especial</option>
+                    </select>
+                    
+                    <div class="cg-color-group">
+                        <label>Aparência</label>
+                        <div class="cg-color-flex">
+                            <input type="color" name="cor_personalizada" value="#2563eb">
+                            <select name="estilo_card">
+                                <option value="solido">Sólido</option>
+                                <option value="gradiente">Gradiente</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="cg-btn-save">Criar Evento</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="cg-monitor-section">
+        <div class="cg-monitor-head">
+            <h3><i class="ph ph-intersect-three"></i> Monitoramento da Semana</h3>
+        </div>
+        <div class="cg-monitor-grid">
+            {% for culto in cultos_proximos %}
+            <div class="cg-monitor-card" 
+                 data-datetime="{{ culto.data|date:'Y-m-d' }}T{{ culto.horario|time:'H:i' }}"
+                 style="border-top: 4px solid {{ culto.cor_personalizada }};">
+                <div class="cg-m-info">
+                    <span class="cg-m-tag" style="color: {{ culto.cor_personalizada }}">{{ culto.get_tipo_display }}</span>
+                    <h4>{{ culto.titulo }}</h4>
+                    <p>{{ culto.data|date:"d/m" }} às {{ culto.horario|time:"H:i" }}</p>
+                </div>
+                <div class="cg-m-timer">
+                    <span class="cg-countdown">00:00:00</span>
+                </div>
+                <a href="{% url 'cultos:detalhe' culto.id %}" class="cg-btn-manage" style="background: {{ culto.cor_personalizada }}">Gerir</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/cultos/cultos.js' %}"></script>
+{% endblock %}

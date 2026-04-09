@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block extra_css %}
-<!-- Link para o CSS específico do módulo de igrejas -->
 <link rel="stylesheet" href="{% static 'assets/css/igrejas/igrejas.css' %}?v=2.3">
 {% endblock %}
 
@@ -18,24 +17,20 @@
         <div class="header-right">
             <div class="stats-group">
                 <div class="stat-card">
-                    <!-- Usamos .count para QuerySets do Django, é mais fiável que |length -->
                     <span id="churchCount" class="stat-num">{{ igrejas.count }}</span>
                     <span class="stat-desc">Igrejas</span>
                 </div>
                 <div class="stat-card">
-                    <!-- Total global de membros cadastrados no sistema -->
                     <span class="stat-num">{{ total_membros }}</span>
                     <span class="stat-desc">Membros</span>
                 </div> 
             </div>
-            <!-- Link para a tela de cadastro de nova unidade -->
-            <a href="{% url 'igrejas:cadastro'%}" class="btn-add-unit">
+            <a href="{% url 'igrejas:cadastro' %}" class="btn-add-unit">
                 <i class="ph-bold ph-plus"></i> Nova Unidade
             </a>
         </div>
     </header>
 
-    <!-- Barra de filtros e pesquisa -->
     <div class="control-bar-premium">
         <div class="search-field">
             <i class="ph ph-magnifying-glass"></i>
@@ -57,10 +52,8 @@
         </div>
     </div>
 
-    <!-- Grid de cards das igrejas -->
     <div class="units-grid" id="unitsGrid">
         {% for igreja in igrejas %}
-        <!-- Card clicável direcionando para o detalhe da unidade específica -->
         <div class="unit-card saude-{{ igreja.status_saude }}" 
             data-nome="{{ igreja.nome }}" 
             data-saude="{{ igreja.status_saude }}"
@@ -75,12 +68,11 @@
             
             <h3>{{ igreja.nome }}</h3>
             <p class="pastor-name">
-                <i class="ph ph-user"></i> {{ igreja.pastor }}
+                <i class="ph ph-user"></i> {{ igreja.pastor.nome|default:"Sem Dirigente" }}
             </p>
 
             <div class="card-footer">
                 <div class="mini-info" style="display: flex; gap: 12px;">
-                    <!-- Adicionado |default:0 para garantir que o número apareça mesmo se o banco retornar nulo -->
                     <span><strong>{{ igreja.total_membros_unidade|default:0 }}</strong> Membros</span>
                     <span><strong>{{ igreja.total_pastores_unidade|default:0 }}</strong> Pastores</span>
                 </div>
@@ -93,11 +85,9 @@
             <div class="no-data">Nenhuma unidade encontrada.</div>
         {% endfor %}
     </div>
-
 </div>
+{% endblock %}
 
 {% block extra_js %}
-<!-- Script para os filtros dinâmicos da lista -->
- <script src="{% static 'assets/js/igrejas/igrejas.js' %}?v=1.7"></script>
-{% endblock %}
+<script src="{% static 'assets/js/igrejas/igrejas.js' %}?v=1.9"></script>
 {% endblock %}
