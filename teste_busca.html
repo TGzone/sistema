@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Busca Membro</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .cg-member-search-container { position: relative; }
+        .cg-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 300px; }
+        .cg-member-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: white; border: 1px solid #ccc; border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 1000;
+            max-height: 200px; overflow-y: auto; opacity: 0; visibility: hidden;
+            transform: translateY(-10px); transition: all 0.2s ease;
+        }
+        .cg-dropdown-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+        .cg-dropdown-item { padding: 8px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .cg-dropdown-item:hover { background: #f5f5f5; }
+        .cg-no-results { padding: 8px; text-align: center; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Busca de Membro</h1>
+    <div class="cg-member-search-container">
+        <input type="text" class="cg-input cg-member-search" id="memberSearch" placeholder="Digite o nome do membro..." autocomplete="off">
+        <input type="hidden" id="memberId">
+        <div class="cg-member-dropdown" id="memberDropdown"></div>
+    </div>
+
+    <script>
+        // Dados simulados
+        const membros = [
+            { id: 1, nome: "Tiago Alves", status: "ativo" },
+            { id: 2, nome: "Ana Santos", status: "ativo" },
+            { id: 3, nome: "Carlos Eduardo", status: "ativo" },
+            { id: 4, nome: "Maria Silva", status: "ativo" }
+        ];
+
+        // Elementos DOM
+        const memberSearch = document.getElementById('memberSearch');
+        const memberDropdown = document.getElementById('memberDropdown');
+        const memberId = document.getElementById('memberId');
+
+        console.log('Elementos encontrados:', { memberSearch, memberDropdown, memberId });
+
+        let selectedIndex = -1;
+
+        function filterMembers(query) {
+            if (query.length < 2) return [];
+            return membros.filter(membro =>
+                membro.nome.toLowerCase().includes(query.toLowerCase()) &&
+                membro.status === 'ativo'
+            ).slice(0, 5);
+        }
+
+        function renderDropdown(results) {
+            console.log('Rendering dropdown with results:', results);
+            if (results.length === 0) {
+                memberDropdown.innerHTML = '<div class="cg-dropdown-item cg-no-results">Nenhum membro encontrado</div>';
+                memberDropdown.classList.add('cg-dropdown-visible');
+                return;
+            }
+
+            const html = results.map((membro, index) =>
+                `<div class="cg-dropdown-item ${index === selectedIndex ? 'cg-dropdown-item-selected' : ''}" data-id="${membro.id}" data-nome="${membro.nome}">
+                    ${membro.nome} (ID: ${membro.id})
+                </div>`
+            ).join('');
+
+            memberDropdown.innerHTML = html;
+            memberDropdown.classList.add('cg-dropdown-visible');
+        }
+
+        function hideDropdown() {
+            memberDropdown.classList.remove('cg-dropdown-visible');
+            selectedIndex = -1;
+        }
+
+        function selectMember(membro) {
+            memberSearch.value = membro.nome;
+            memberId.value = membro.id;
+            hideDropdown();
+        }
+
+        // Event listeners
+        memberSearch.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            console.log('Input event triggered, query:', query);
+            const results = filterMembers(query);
+            renderDropdown(results);
+        });
+
+        memberDropdown.addEventListener('click', function(e) {
+            const item = e.target.closest('.cg-dropdown-item');
+            if (item && !item.classList.contains('cg-no-results')) {
+                const membroId = item.dataset.id;
+                const membroNome = item.dataset.nome;
+                selectMember({ id: membroId, nome: membroNome });
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!memberSearch.contains(e.target) && !memberDropdown.contains(e.target)) {
+                hideDropdown();
+            }
+        });
+
+        console.log('Teste inicializado!');
+    </script>
+</body>
+</html>

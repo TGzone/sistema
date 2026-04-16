@@ -8,56 +8,188 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Financeiro</h1>
-        <p class="page-subtitle">Controle de dízimos, ofertas e despesas.</p>
-    </div>
-    <div class="header-actions">
-        <button class="btn btn-primary"><i class="ph ph-plus"></i> Nova Transação</button>
+<!-- Header de Contexto -->
+<div class="cg-finance-header">
+    <div class="cg-header-main">
+        <h1 class="cg-header-title">Visão Geral Financeira</h1>
+        <div class="cg-header-actions">
+            <select class="cg-period-selector">
+                <option value="current-month">Este mês</option>
+                <option value="last-month">Mês passado</option>
+                <option value="last-3-months">Últimos 3 meses</option>
+                <option value="current-year">Este ano</option>
+            </select>
+            <button class="cg-btn-primary">
+                <i class="ph ph-plus"></i>
+                Novo Registro
+            </button>
+        </div>
     </div>
 </div>
 
-<div class="finance-grid">
-    <div class="balance-card">
-        <div class="balance-header">
-            <span>Entradas (Mês)</span>
-            <div class="balance-icon icon-income"><i class="ph ph-arrow-down-left"></i></div>
+<!-- Grid de Resumo -->
+<div class="cg-metrics-grid">
+    <div class="cg-metric-card">
+        <div class="cg-metric-header">
+            <span class="cg-metric-label">Saldo Atual</span>
+            <div class="cg-sparkline cg-sparkline-up">
+                <!-- Mini gráfico de tendência -->
+                <svg width="60" height="20" viewBox="0 0 60 20">
+                    <path d="M0,15 L10,12 L20,14 L30,10 L40,8 L50,6 L60,4" stroke="#10b981" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
         </div>
-        <div class="balance-amount amount-pos">R$ 12.450,00</div>
+        <div class="cg-metric-value">R$ 15.750,00</div>
+        <div class="cg-metric-change cg-change-positive">+5.2% vs mês anterior</div>
     </div>
-    <div class="balance-card">
-        <div class="balance-header">
-            <span>Saídas (Mês)</span>
-            <div class="balance-icon icon-expense"><i class="ph ph-arrow-up-right"></i></div>
+
+    <div class="cg-metric-card">
+        <div class="cg-metric-header">
+            <span class="cg-metric-label">Entradas do Mês</span>
+            <div class="cg-sparkline cg-sparkline-up">
+                <svg width="60" height="20" viewBox="0 0 60 20">
+                    <path d="M0,18 L10,16 L20,14 L30,12 L40,10 L50,8 L60,6" stroke="#10b981" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
         </div>
-        <div class="balance-amount amount-neg">R$ 3.200,00</div>
+        <div class="cg-metric-value">R$ 12.450,00</div>
+        <div class="cg-metric-change cg-change-positive">+8.1% vs mês anterior</div>
     </div>
-    <div class="balance-card">
-        <div class="balance-header">
-            <span>Saldo Atual</span>
-            <div class="balance-icon icon-total"><i class="ph ph-bank"></i></div>
+
+    <div class="cg-metric-card">
+        <div class="cg-metric-header">
+            <span class="cg-metric-label">Saídas do Mês</span>
+            <div class="cg-sparkline cg-sparkline-down">
+                <svg width="60" height="20" viewBox="0 0 60 20">
+                    <path d="M0,4 L10,6 L20,8 L30,10 L40,12 L50,14 L60,16" stroke="#ef4444" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
         </div>
-        <div class="balance-amount">R$ 9.250,00</div>
+        <div class="cg-metric-value">R$ 3.200,00</div>
+        <div class="cg-metric-change cg-change-negative">-2.3% vs mês anterior</div>
+    </div>
+
+    <div class="cg-metric-card">
+        <div class="cg-metric-header">
+            <span class="cg-metric-label">Fundo de Reserva</span>
+            <div class="cg-sparkline cg-sparkline-neutral">
+                <svg width="60" height="20" viewBox="0 0 60 20">
+                    <path d="M0,10 L10,10 L20,10 L30,10 L40,10 L50,10 L60,10" stroke="#6b7280" stroke-width="2" fill="none"/>
+                </svg>
+            </div>
+        </div>
+        <div class="cg-metric-value">R$ 8.500,00</div>
+        <div class="cg-metric-change cg-change-neutral">Meta: R$ 10.000,00</div>
     </div>
 </div>
 
-<div class="table-card">
-    <div class="table-toolbar"><h3>Últimas Transações</h3></div>
-    <div class="transaction-list">
-        <div class="transaction-item">
-            <div class="tx-info">
-                <h4>Dízimo - Maria Almeida</h4>
-                <p>18/03/2026 • Transferência PIX</p>
-            </div>
-            <div class="tx-value amount-pos">+ R$ 500,00</div>
+<!-- Conteúdo Principal -->
+<div class="cg-main-content">
+    <!-- Tabela de Transações -->
+    <div class="cg-transactions-section">
+        <div class="cg-section-header">
+            <h2 class="cg-section-title">Transações Recentes</h2>
+            <a href="#" class="cg-link">Ver todas</a>
         </div>
-        <div class="transaction-item">
-            <div class="tx-info">
-                <h4>Conta de Energia (Igreja Sede)</h4>
-                <p>15/03/2026 • Pagamento de Boleto</p>
+        <div class="cg-transactions-table">
+            <div class="cg-table-header">
+                <div class="cg-col-date">Data</div>
+                <div class="cg-col-description">Descrição</div>
+                <div class="cg-col-category">Categoria</div>
+                <div class="cg-col-value">Valor</div>
+                <div class="cg-col-status">Status</div>
             </div>
-            <div class="tx-value amount-neg">- R$ 450,00</div>
+            <div class="cg-table-body">
+                <div class="cg-table-row">
+                    <div class="cg-col-date">20/04/2026</div>
+                    <div class="cg-col-description">Dízimo - João Silva</div>
+                    <div class="cg-col-category">Dízimo</div>
+                    <div class="cg-col-value cg-value-positive">+ R$ 350,00</div>
+                    <div class="cg-col-status">
+                        <span class="cg-status-dot cg-status-verified" title="Comprovante anexado"></span>
+                    </div>
+                </div>
+                <div class="cg-table-row">
+                    <div class="cg-col-date">18/04/2026</div>
+                    <div class="cg-col-description">Conta de Energia - Igreja Sede</div>
+                    <div class="cg-col-category">Infraestrutura</div>
+                    <div class="cg-col-value cg-value-negative">- R$ 450,00</div>
+                    <div class="cg-col-status">
+                        <span class="cg-status-dot cg-status-pending" title="Aguardando comprovante"></span>
+                    </div>
+                </div>
+                <div class="cg-table-row">
+                    <div class="cg-col-date">17/04/2026</div>
+                    <div class="cg-col-description">Oferta de Culto - Domingo</div>
+                    <div class="cg-col-category">Oferta</div>
+                    <div class="cg-col-value cg-value-positive">+ R$ 280,00</div>
+                    <div class="cg-col-status">
+                        <span class="cg-status-dot cg-status-verified" title="Comprovante anexado"></span>
+                    </div>
+                </div>
+                <div class="cg-table-row">
+                    <div class="cg-col-date">15/04/2026</div>
+                    <div class="cg-col-description">Manutenção do Sistema de Som</div>
+                    <div class="cg-col-category">Manutenção</div>
+                    <div class="cg-col-value cg-value-negative">- R$ 1.200,00</div>
+                    <div class="cg-col-status">
+                        <span class="cg-status-dot cg-status-verified" title="Comprovante anexado"></span>
+                    </div>
+                </div>
+                <div class="cg-table-row">
+                    <div class="cg-col-date">12/04/2026</div>
+                    <div class="cg-col-description">Doação Especial - Projeto Social</div>
+                    <div class="cg-col-category">Doação</div>
+                    <div class="cg-col-value cg-value-positive">+ R$ 500,00</div>
+                    <div class="cg-col-status">
+                        <span class="cg-status-dot cg-status-pending" title="Aguardando comprovante"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inteligência de Caixa -->
+    <div class="cg-insights-sidebar">
+        <div class="cg-insight-card">
+            <h3 class="cg-insight-title">Previsão de Saídas</h3>
+            <div class="cg-insight-item">
+                <div class="cg-insight-label">Próximas 2 semanas</div>
+                <div class="cg-insight-value">R$ 2.850,00</div>
+            </div>
+            <div class="cg-insight-item">
+                <div class="cg-insight-label">Próximo mês</div>
+                <div class="cg-insight-value">R$ 8.420,00</div>
+            </div>
+            <div class="cg-insight-item">
+                <div class="cg-insight-label">Próximos 3 meses</div>
+                <div class="cg-insight-value">R$ 24.150,00</div>
+            </div>
+        </div>
+
+        <div class="cg-insight-card">
+            <h3 class="cg-insight-title">Alertas de Infraestrutura</h3>
+            <div class="cg-alert-item cg-alert-high">
+                <div class="cg-alert-dot"></div>
+                <div class="cg-alert-content">
+                    <div class="cg-alert-label">Manutenção do Telhado</div>
+                    <div class="cg-alert-meta">Urgente - Orçamento pendente</div>
+                </div>
+            </div>
+            <div class="cg-alert-item cg-alert-medium">
+                <div class="cg-alert-dot"></div>
+                <div class="cg-alert-content">
+                    <div class="cg-alert-label">Reparo do Sistema de Som</div>
+                    <div class="cg-alert-meta">Médio prazo - R$ 1.200,00</div>
+                </div>
+            </div>
+            <div class="cg-alert-item cg-alert-low">
+                <div class="cg-alert-dot"></div>
+                <div class="cg-alert-content">
+                    <div class="cg-alert-label">Atualização de Iluminação</div>
+                    <div class="cg-alert-meta">Planejado - Q2 2026</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

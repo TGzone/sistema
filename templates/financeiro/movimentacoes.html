@@ -1,149 +1,188 @@
-{% extends 'base.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
 
+{% block title %}Fluxo de Registros | GeanGestão{% endblock %}
+
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static '/assets/css/financeiro/movimentacoes.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/financeiro/movimentacoes.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4 cg-movimentacoes-wrapper">
-    
-    <div class="row mb-4">
-        <div class="col-xl-4 col-sm-6 mb-xl-0 mb-4">
-            <div class="card cg-card-finance entrada">
-                <div class="card-body p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <p class="text-sm mb-0 text-capitalize font-weight-bold">Entradas (Hoje)</p>
-                            <h5 class="font-weight-bolder mb-0">R$ 0,00</h5>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                <i class="ni ni-money-coins text-lg opacity-10" aria-hidden="true"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- Header de Operação -->
+<div class="cg-movimentacoes-header">
+    <div class="cg-header-content">
+        <h1 class="cg-header-title">Fluxo de Registros</h1>
+        <div class="cg-unit-indicator">
+            <span class="cg-unit-label">Unidade Ativa:</span>
+            <span class="cg-unit-name">Sede Central</span>
         </div>
-        <div class="col-xl-4 col-sm-6 mb-xl-0 mb-4">
-            <div class="card cg-card-finance saida">
-                <div class="card-body p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <p class="text-sm mb-0 text-capitalize font-weight-bold">Saídas (Hoje)</p>
-                            <h5 class="font-weight-bolder mb-0">R$ 0,00</h5>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                                <i class="ni ni-curved-next text-lg opacity-10" aria-hidden="true"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    </div>
+</div>
+
+<!-- Layout Principal -->
+<div class="cg-main-layout">
+    <!-- Formulário de Lançamento Rápido -->
+    <div class="cg-form-section">
+        <div class="cg-card">
+            <div class="cg-card-header">
+                <h2 class="cg-card-title">Novo Lançamento</h2>
             </div>
-        </div>
-        <div class="col-xl-4 col-sm-12">
-            <div class="card cg-card-finance saldo">
-                <div class="card-body p-3">
-                    <div class="row">
-                        <div class="col-8">
-                            <p class="text-sm mb-0 text-capitalize font-weight-bold">Saldo em Caixa</p>
-                            <h5 class="font-weight-bolder mb-0">R$ 0,00</h5>
-                        </div>
-                        <div class="col-4 text-end">
-                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
-                                <i class="ni ni-bank text-lg opacity-10" aria-hidden="true"></i>
+            <div class="cg-card-body">
+                <form action="#" method="POST" enctype="multipart/form-data" class="cg-form">
+                    {% csrf_token %}
+
+                    <!-- Seleção de Membro -->
+                    <div class="cg-form-group">
+                        <l abel class="cg-form-label">#PENDENTE DE AJUSTE#</label>
+                        <label class="cg-form-label">Membro / Doador</label>
+                        <div class="cg-member-search-container">
+                            <input type="text" name="membro_nome" class="cg-input cg-member-search"
+                                   id="memberSearch" placeholder="Digite o nome do membro..." autocomplete="off">
+                            <input type="hidden" name="membro_id" id="memberId">
+                            <div class="cg-member-dropdown" id="memberDropdown">
+                                <!-- Resultados da busca aparecerão aqui -->
                             </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Dados da Transação -->
+                    <div class="cg-form-row">
+                        <div class="cg-form-group">
+                            <label class="cg-form-label">Valor (R$)</label>
+                            <input type="number" step="0.01" name="valor" class="cg-input cg-input-mono" placeholder="0,00" required>
+                        </div>
+                        <div class="cg-form-group">
+                            <label class="cg-form-label">Data</label>
+                            <input type="date" name="data" class="cg-input" value="{% now 'Y-m-d' %}">
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Entrada -->
+                    <div class="cg-form-group">
+                        <label class="cg-form-label">Tipo de Entrada</label>
+                        <select name="tipo" class="cg-select cg-input">
+                            <option value="dizimo">Dízimo</option>
+                            <option value="oferta">Oferta</option>
+                            <option value="missionaria">Oferta Missionária</option>
+                            <option value="avulsa">Oferta Avulsa</option>
+                            <option value="outros">Outros</option>
+                        </select>
+                    </div>
+
+                    <!-- Contexto de Ocasião -->
+                    <div class="cg-form-group">
+                        <label class="cg-form-label">Ocasião</label>
+                        <div class="cg-radio-group">
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_culto" value="culto" checked>
+                            <label class="cg-radio-label" for="ocasiao_culto">Culto</label>
+
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_celula" value="celula">
+                            <label class="cg-radio-label" for="ocasiao_celula">Célula</label>
+
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_evento" value="evento">
+                            <label class="cg-radio-label" for="ocasiao_evento">Evento</label>
+
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_atipico" value="atipico">
+                            <label class="cg-radio-label" for="ocasiao_atipico">Atípico</label>
+                        </div>
+                        <textarea name="justificativa" id="cg-justificativa" class="cg-textarea cg-input cg-hidden" rows="2" placeholder="Descreva o motivo atípico..."></textarea>
+                    </div>
+
+                    <!-- Área de Protocolo Visual -->
+                    <div class="cg-form-group">
+                        <label class="cg-form-label">Comprovante (Obrigatório)</label>
+                        <div class="cg-upload-zone">
+                            <input type="file" name="comprovante" id="fileUpload" class="cg-hidden" required>
+                            <label for="fileUpload" class="cg-upload-label">
+                                <div class="cg-upload-icon">
+                                    <i class="ph ph-cloud-arrow-up"></i>
+                                </div>
+                                <div class="cg-upload-text">
+                                    <span class="cg-upload-primary">Arraste o PDF/Imagem aqui</span>
+                                    <span class="cg-upload-secondary">ou clique para selecionar</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="cg-btn-primary cg-submit-btn">
+                        Registrar Lançamento
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card cg-form-card mb-4 shadow-soft">
-                <div class="card-header pb-0 bg-transparent">
-                    <h6 class="font-weight-bolder text-info text-gradient">Protocolo de Registro Rápido</h6>
-                    <p class="text-sm mb-0">Lance dízimos, ofertas ou despesas imediatas abaixo.</p>
-                </div>
-                <div class="card-body">
-                    <form class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Tipo de Movimentação</label>
-                            <select class="form-control cg-select" id="tipo_movimento">
-                                <option value="ENTRADA">Dízimo</option>
-                                <option value="ENTRADA">Oferta</option>
-                                <option value="ENTRADA">Oferta Missionária</option>
-                                <option value="ENTRADA">Oferta Avulsa</option>
-                                <option value="SAIDA">Custos Mensais (Saída)</option>
-                                <option value="ENTRADA">Outros</option>
-                            </select>
-                        </div>
-                        <div class="col-md-5">
-                            <label class="form-label">Membro ou Finalidade</label>
-                            <input type="text" class="form-control cg-input" placeholder="Ex: Dízimo - João Silva ou Pão Santa Ceia">
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label">Valor (R$)</label>
-                            <input type="number" step="0.01" class="form-control cg-input" placeholder="0,00">
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn cg-btn-registrar w-100 shadow-sm">
-                                <i class="fas fa-plus me-2"></i>Registrar
-                            </button>
-                        </div>
-                    </form>
-                </div>
+    <!-- Feed de Atividade Diária -->
+    <div class="cg-activity-section">
+        <div class="cg-card">
+            <div class="cg-card-header">
+                <h2 class="cg-card-title">Registros do Dia</h2>
+                <div class="cg-total-badge">Total: R$ 1.250,00</div>
             </div>
-        </div>
-    </div>
+            <div class="cg-card-body">
+                <div class="cg-activity-list">
+                    <div class="cg-activity-item">
+                        <div class="cg-activity-info">
+                            <div class="cg-activity-name">Tiago Alves</div>
+                            <div class="cg-activity-meta">Dízimo • Culto de Domingo</div>
+                        </div>
+                        <div class="cg-activity-origin">
+                            <i class="ph ph-desktop" title="Manual via Sistema"></i>
+                        </div>
+                        <div class="cg-activity-status">
+                            <span class="cg-status-dot cg-status-synced" title="Sincronizado"></span>
+                        </div>
+                        <div class="cg-activity-value">R$ 550,00</div>
+                    </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card cg-lista-card shadow-soft">
-                <div class="card-header pb-0 bg-transparent">
-                    <h6>Histórico de Lançamentos</h6>
-                </div>
-                <div class="card-body px-0 pb-2">
-                    <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Origem</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Membro / Descrição</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Categoria</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Valor</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="align-middle">
-                                        <span class="badge badge-sm bg-gradient-secondary cg-tag-origem ms-3">SISTEMA</span>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">Maria Oliveira</p>
-                                        <p class="text-xs text-secondary mb-0">Dízimo Mensal</p>
-                                    </td>
-                                    <td class="align-middle text-center text-sm">
-                                        <span class="text-xs font-weight-bold">Dízimo</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-success text-xs font-weight-bold">+ R$ 200,00</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">14/04/2024</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="cg-activity-item">
+                        <div class="cg-activity-info">
+                            <div class="cg-activity-name">Ana Santos</div>
+                            <div class="cg-activity-meta">Oferta • Célula</div>
+                        </div>
+                        <div class="cg-activity-origin">
+                            <i class="ph ph-whatsapp-logo" title="Via WhatsApp/N8N"></i>
+                        </div>
+                        <div class="cg-activity-status">
+                            <span class="cg-status-dot cg-status-pending" title="Pendente Conferência"></span>
+                        </div>
+                        <div class="cg-activity-value">R$ 150,00</div>
+                    </div>
+
+                    <div class="cg-activity-item">
+                        <div class="cg-activity-info">
+                            <div class="cg-activity-name">Carlos Eduardo</div>
+                            <div class="cg-activity-meta">Dízimo • Culto de Domingo</div>
+                        </div>
+                        <div class="cg-activity-origin">
+                            <i class="ph ph-robot" title="Automação"></i>
+                        </div>
+                        <div class="cg-activity-status">
+                            <span class="cg-status-dot cg-status-synced" title="Sincronizado"></span>
+                        </div>
+                        <div class="cg-activity-value">R$ 350,00</div>
+                    </div>
+
+                    <div class="cg-activity-item">
+                        <div class="cg-activity-info">
+                            <div class="cg-activity-name">Maria Silva</div>
+                            <div class="cg-activity-meta">Oferta Missionária • Evento</div>
+                        </div>
+                        <div class="cg-activity-origin">
+                            <i class="ph ph-desktop" title="Manual via Sistema"></i>
+                        </div>
+                        <div class="cg-activity-status">
+                            <span class="cg-status-dot cg-status-pending" title="Pendente Conferência"></span>
+                        </div>
+                        <div class="cg-activity-value">R$ 200,00</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script src="{% static 'assets/js/financeiro/movimentacoes.js' %}"></script>
 {% endblock %}

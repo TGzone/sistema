@@ -63,9 +63,10 @@
                     </button>
                     <div class="submenu">
                         <a href="{% url 'financeiro:financeiro' %}" class="submenu-link">Visão Geral</a>
-                        <a href="#" class="submenu-link">Contas a Pagar</a>
-                        <a href="#" class="submenu-link">Contas a Receber</a>
-                        <a href="#" class="submenu-link">Relatórios Fiscais</a>
+                        <a href="{% url 'financeiro:movimentacoes' %}" class="submenu-link">Movimentações</a>
+                        <a href="{% url 'financeiro:contas' %}" class="submenu-link">Contas a Pagar</a>
+                        <a href="{% url 'financeiro:manutencao' %}" class="submenu-link">Manutenção</a>
+                        <a href="{% url 'financeiro:bancos' %}" class="submenu-link">Banco</a>
                     </div>
                 </div>
 
