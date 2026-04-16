@@ -15,10 +15,13 @@
     <link rel="stylesheet" href="{% static 'assets/css/base/base.css' %}">
 
     {% block extra_css %}{% endblock %}
+    {% block extrastyle %}{% endblock %}
 </head>
 <body>
+    <div class="overlay" id="overlay"></div>
+
     <div class="app-layout">
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo-icon">
                     <i class="ph-fill ph-church"></i>
@@ -27,44 +30,78 @@
             </div>
             
             <nav class="sidebar-nav">
-                <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                    <i class="ph ph-squares-four"></i>
-                    <span>Dashboard</span>
-                </a>
+                 <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-users"></i>
+                        <span>Dashboard</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                       
+                        <a href="#" class="submenu-link">Relatórios</a>
+                    </div>
+                </div>
 
-                <a href="{% url 'pessoas:lista' %}" class="nav-item {% if request.resolver_match.app_name == 'pessoas' %}active{% endif %}">
-                  <i class="ph ph-users"></i>
-                   <span>Pessoas</span>
-                </a>
+                <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-users"></i>
+                        <span>Pessoas</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                        <a href="{% url 'pessoas:cadastro' %}" class="submenu-link">Cadastro</a>
+                        <a href="{% url 'pessoas:lista' %}" class="submenu-link">Lista de Pessoas</a>
+                        <a href="#" class="submenu-link">Relatórios</a>
+                    </div>
+                </div>
+                 
+                <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-currency-dollar"></i>
+                        <span>Financeiro</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                        <a href="{% url 'financeiro:financeiro' %}" class="submenu-link">Visão Geral</a>
+                        <a href="#" class="submenu-link">Contas a Pagar</a>
+                        <a href="#" class="submenu-link">Contas a Receber</a>
+                        <a href="#" class="submenu-link">Relatórios Fiscais</a>
+                    </div>
+                </div>
 
-                <a href="{% url 'financeiro' %}" class="nav-item {% if request.resolver_match.url_name == 'financeiro' %}active{% endif %}">
-                    <i class="ph ph-currency-dollar"></i>
-                    <span>Financeiro</span>
-                </a>
+                <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-church"></i>
+                        <span>Igrejas</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                        <a href="{% url 'igrejas:cadastro' %}" class="submenu-link">Cadastro de Igrejas</a>
+                        <a href="{% url 'igrejas:lista' %}" class="submenu-link">Lista de Igrejas</a>
+                        <a href="#" class="submenu-link">Cultos</a>
+                        <a href="#" class="submenu-link">Unidades</a>
+                    </div>
+                </div>
 
-                <a href="{% url 'igrejas:lista' %}" class="nav-item {% if request.resolver_match.app_name == 'igrejas' %}active{% endif %}">
-                    <i class="ph ph-users-three"></i>
-                    <span>Igrejas</span>
-                </a>
-
-                <a href="{% url 'relatorios' %}" class="nav-item {% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}">
-                    <i class="ph ph-chart-line-up"></i>
-                    <span>Relatórios</span>
-                </a>
-                
-                <a href="{% url 'cultos:calendario' %}" 
-                  class="nav-item {% if 'cultos' in request.path %}active{% endif %}">
-                 <i class="ph ph-calendar-check"></i>
-                 <span>Cultos</span>
-                </a>
- 
+                <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-cross"></i>
+                        <span>Cultos</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                        <a href="#" class="submenu-link">Lista de Cultos</a>
+                        <a href="#" class="submenu-link">Novo Culto</a>
+                        <a href="#" class="submenu-link">Relatórios</a>
+                    </div>
+                </div>
             </nav>
             
             <div class="sidebar-footer">
-                <a href="#" class="nav-item">
+                <button class="config-btn">
                     <i class="ph ph-gear"></i>
                     <span>Configurações</span>
-                </a>
+                </button>
             </div>
         </aside>
 
@@ -85,6 +122,9 @@
                         <i class="ph ph-bell"></i>
                         <span class="badge"></span>
                     </button>
+                    <button id="openModalBtn" class="icon-btn">
+                        <i class="ph ph-plus"></i>
+                    </button>
                     <div class="user-profile">
                         <div class="avatar">
                             <span>AD</span>
@@ -93,18 +133,45 @@
                             <span class="user-name">Admin Sistema</span>
                             <span class="user-role">tiago.ald</span>
                         </div>
-                        <i class="ph ph-caret-down"></i>
+                        <i class="ph ph-caret-down dropdown-arrow"></i>
+                        <div class="user-dropdown">
+                            <a href="#" class="dropdown-item">
+                                <i class="ph ph-user"></i>
+                                <span>Meu Perfil</span>
+                            </a>
+                            <a href="#" class="dropdown-item">
+                                <i class="ph ph-gear"></i>
+                                <span>Configurações</span>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item logout">
+                                <i class="ph ph-sign-out"></i>
+                                <span>Sair</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
 
             <div class="content-area">
-                {% block content %}
-                {% endblock %}
+                <div class="content-wrapper">
+                    {% block content %}
+                    {% endblock %}
+                </div>
             </div>
         </main>
     </div>
 
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Modal de Exemplo</h2>
+            <p>Este é um modal que abre ao clicar no botão.</p>
+        </div>
+    </div>
+
+    <script src="{% static 'assets/js/base/base.js' %}"></script>
     {% block extra_js %}{% endblock %}
 
 </body>

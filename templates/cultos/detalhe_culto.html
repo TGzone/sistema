@@ -1,0 +1,107 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/cultos/detalhe_culto.css' %}?v={% now 'U' %}">
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+{% endblock %}
+
+{% block content %}
+<div class="cg-main-wrapper" style="display: flex; justify-content: center; align-items: flex-start; padding-top: 40px;">
+    
+    <div class="cg-card-panel" style="width: 100%; max-width: 6000px;">
+        <div class="cg-panel-head" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 20px;">
+            <h4 style="margin: 0; font-size: 18px;"><i class="ph ph-pencil-simple"></i> Editar Evento</h4>
+            <a href="{% url 'cultos:calendario' %}" style="color: #64748b; text-decoration: none;" title="Fechar">
+                <i class="ph ph-x-circle" style="font-size: 26px;"></i>
+            </a>
+        </div>
+
+        <form action="{% url 'cultos:detalhe' culto.id %}" method="POST" class="cg-form">
+            {% csrf_token %}
+            
+            <div class="cg-form-group">
+                <label>Título do Evento</label>
+                <input type="text" name="titulo" value="{{ culto.titulo }}" required>
+            </div>
+
+            <div class="cg-form-row">
+                <div class="cg-form-group">
+                    <label>Data</label>
+                    <input type="date" name="data" value="{{ culto.data|date:'Y-m-d' }}" required>
+                </div>
+                <div class="cg-form-group">
+                    <label>Hora</label>
+                    <input type="time" name="horario" value="{{ culto.horario|time:'H:i' }}" required>
+                </div>
+            </div>
+
+            <div class="cg-form-group">
+                <label>Tipo de Reunião</label>
+                <select name="tipo">
+                    <option value="culto_domingo" {% if culto.tipo == 'culto_domingo' %}selected{% endif %}>Culto de Domingo</option>
+                    <option value="doutrina" {% if culto.tipo == 'doutrina' %}selected{% endif %}>Culto de Doutrina</option>
+                    <option value="oracao" {% if culto.tipo == 'oracao' %}selected{% endif %}>Reunião de Oração</option>
+                    <option value="celula" {% if culto.tipo == 'celula' %}selected{% endif %}>Célula</option>
+                    <option value="ensaio" {% if culto.tipo == 'ensaio' %}selected{% endif %}>Ensaio do Louvor</option>
+                    <option value="evento_especial" {% if culto.tipo == 'evento_especial' %}selected{% endif %}>Evento Especial</option>
+                    <option value="outros" {% if culto.tipo == 'outros' %}selected{% endif %}>Outros</option>
+                </select>
+            </div>
+
+            <div class="cg-form-group">
+                <label>Observações / Preletor</label>
+                <textarea name="descricao" rows="3">{% if culto.descricao %}{{ culto.descricao }}{% endif %}</textarea>
+            </div>
+
+            <div class="cg-form-row">
+                <div class="cg-form-group">
+                    <label>Cor do Card</label>
+                    <input type="color" name="cor_personalizada" class="cg-color-picker" value="{{ culto.cor_personalizada }}">
+                </div>
+                <div class="cg-form-group">
+                    <label>Estilo Visual</label>
+                    <select name="estilo_card">
+                        <option value="solido" {% if culto.estilo_card == 'solido' %}selected{% endif %}>Cor Sólida</option>
+                        <option value="gradiente" {% if culto.estilo_card == 'gradiente' %}selected{% endif %}>Gradiente Premium</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 300px; margin-top: 24px;">
+                <button type="submit" class="cg-btn-primary" style="flex: 2;">
+                    <i class="ph ph-check-circle" style="font-size: 16px;"></i> Salvar Alterações
+                </button>
+                
+                <a href="{% url 'cultos:excluir' culto.id %}" onclick="return confirm('Certeza que deseja excluir? Isso não tem volta.');" class="cg-btn-primary" style="flex: 1; background: #ef4444; text-align: center; text-decoration: none;">
+                    <i class="ph ph-trash" style="font-size: 16px;"></i> Excluir
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<nav class="navbar">
+  <button class="menu-toggle">☰ Menu</button>
+
+  <ul class="menu">
+    <li><a href="#">Início</a></li>
+
+    <li class="has-submenu">
+      <button class="submenu-toggle">Financeiro ▾</button>
+      <ul class="submenu">
+        <li><a href="#">Entradas</a></li>
+        <li><a href="#">Saídas</a></li>
+      </ul>
+    </li>
+
+    <li><a href="#">Relatórios</a></li>
+  </ul>
+</nav>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'assets/js/cultos/cultos.js' %}?v={% now 'U' %}"></script>
+{% endblock %}

@@ -1,0 +1,48 @@
+/* Blindagem de Estilo Nyro Alves */
+
+.cg-card-finance {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.cg-card-finance:hover {
+    transform: translateY(-5px);
+}
+
+.cg-card-finance.entrada {
+    border-left: 5px solid #2dce89; /* Verde Sucesso */
+}
+
+.cg-form-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 1.5rem;
+}
+
+.cg-input, .cg-select {
+    border-radius: 0.75rem;
+    border: 1px solid #e9ecef;
+    padding: 0.75rem;
+}
+
+.cg-btn-registrar {
+    background-image: linear-gradient(310deg, #7928ca 0%, #ff0080 100%);
+    color: white;
+    border-radius: 0.75rem;
+    font-weight: bold;
+    border: none;
+}
+
+.cg-tag-zap {
+    font-size: 0.7rem;
+    padding: 0.4em 0.8em;
+    border-radius: 0.5rem;
+}
+
+.cg-status-pendente {
+    background-color: #e9ecef;
+    color: #67748e;
+    border-radius: 0.5rem;
+}

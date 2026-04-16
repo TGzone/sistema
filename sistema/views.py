@@ -1,31 +1,32 @@
 from django.shortcuts import render
-
+from django.views.decorators.cache import never_cache
+# --- ESTRUTURA BASE ---
+@never_cache
 def base(request):
     return render(request, "base/base.html")
 
+@never_cache
 def home(request):
     return render(request, "home.html")
 
+@never_cache
 def dashboard(request):
-    # Tem que colocar a pasta antes do arquivo
     return render(request, "dashboard.html")    
+
+# --- MÓDULOS INDEPENDENTES (LOGICA CENTRALIZADA) ---
 
 def pessoas(request):
     return render(request, "pessoas/pessoas.html")  
 
-def relatorios(request):
-    return render(request, "relatorios.html")   
-
 def igrejas(request):
     return render(request, "igrejas.html")  
 
-def financeiro(request):
-    # Ajustei o nome para bater com a pasta que criamos
-    return render(request, "financeiro/financeiro.html")  
-
 def pastoral(request):
-    # Se esse estiver solto na pasta templates, pode deixar assim
     return render(request, "pastoral.html")
 
 def cultos(request):
     return render(request, "cultos/cultos.html")    
+
+# --- MÓDULO FINANCEIRO (SUBMENUS) ---
+def financeiro(request):
+    return render(request, "financeiro/financeiro.html")

@@ -1,0 +1,47 @@
+/* Efeito de elevação nos cards */
+.balance-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.balance-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajuste fino nos valores */
+.balance-amount {
+    font-size: 1.75rem; /* Um pouco menor pra não "gritar" */
+    letter-spacing: -0.025em;
+    margin-top: 0.5rem;
+}
+
+/* Transações com cara de lista moderna */
+.transaction-item {
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.transaction-item:hover {
+    background: var(--bg-body);
+}
+
+.tx-value {
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif; /* Se estiver usando */
+}
+
+/* Badges de categoria (opcional, mas fica top) */
+.category-badge {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-left: 8px;
+    background: #e2e8f0;
+}

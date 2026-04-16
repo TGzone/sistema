@@ -266,7 +266,7 @@
 /* O Card que desliza */
 .drawer-card { 
     position: fixed; 
-    top: 0; 
+    top: var(--topbar-height); 
     right: -450px; /* Escondido fora da tela */
     width: 450px; 
     height: 100%;

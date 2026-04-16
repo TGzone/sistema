@@ -14,9 +14,9 @@ urlpatterns = [
     path('pessoas/', include('pessoas.urls', namespace='pessoas')),
     path('igrejas/', include('igrejas.urls', namespace='igrejas')),
     path('cultos/', include('cultos.urls', namespace='cultos')),
-    # ROTAS DIRETAS
-    path('relatorios/', views.relatorios, name='relatorios'),
-    path('financeiro/', views.financeiro, name='financeiro'),
+   # Única linha necessária para o financeiro:
+    path('financeiro/', include('financeiro.urls', namespace='financeiro')),
+   
     path('pastoral/', views.pastoral, name='pastoral'),
 ]
 
