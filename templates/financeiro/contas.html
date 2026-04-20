@@ -1,0 +1,190 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Central de Obrigações | GeanGestão{% endblock %}
+
+{% block extra_css %}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="{% static 'assets/css/financeiro/contas.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cg-page-shell">
+    <header class="cg-page-header">
+        <div>
+            <span class="cg-page-badge">Financeiro{% if igreja_selecionada %} • {{ igreja_selecionada.nome }}{% endif %}</span>
+            <h1 class="cg-page-title">Central de Obrigações</h1>
+            <p class="cg-page-subtitle">Gestão operativa de contas fixas e previsibilidade de caixa.</p>
+        </div>
+        <div class="cg-page-actions">
+            <label for="cg-mes-seletor" class="cg-text-label">Mês de análise</label>
+            <select id="cg-mes-seletor" class="cg-month-selector form-select">
+                <option value="2026-01">Janeiro 2026</option>
+                <option value="2026-02" selected>Fevereiro 2026</option>
+                <option value="2026-03">Março 2026</option>
+            </select>
+        </div>
+    </header>
+
+    <div class="cg-workspace">
+        
+        <main class="cg-panel-left">
+            <div class="cg-kpis-row">
+                <article class="cg-kpi-card">
+                    <div class="cg-kpi-header">
+                        <span class="cg-status-dot cg-status-pendente"></span>
+                        <small class="cg-kpi-label">Total do Mês</small>
+                    </div>
+                    <strong class="cg-kpi-value" id="cg-total-pagar">R$ {{ total_pagar|floatformat:2 }}</strong>
+                </article>
+
+                <article class="cg-kpi-card">
+                    <div class="cg-kpi-header">
+                        <span class="cg-status-dot cg-status-atrasado"></span>
+                        <small class="cg-kpi-label">Contas Vencidas</small>
+                    </div>
+                    <strong class="cg-kpi-value" id="cg-contas-vencidas">{{ contas_vencidas }}</strong>
+                </article>
+
+                <article class="cg-kpi-card">
+                    <div class="cg-kpi-header">
+                        <span class="cg-status-dot cg-status-pago"></span>
+                        <small class="cg-kpi-label">Status da Unidade</small>
+                    </div>
+                    <strong class="cg-kpi-value-alt" style="font-size: 14px; color: #10b981;">OPERACIONAL</strong>
+                </article>
+            </div>
+
+            <table class="mini-table" style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                    <tr style="text-align: left; font-size: 11px; text-transform: uppercase; color: #94a3b8;">
+                        <th style="padding: 12px;">Status</th>
+                        <th style="padding: 12px;">Tipo/Categoria</th> 
+                        <th style="padding: 12px;">Vencimento</th>
+                        <th style="padding: 12px; text-align: right;">Ação</th>
+                    </tr>
+                </thead>
+
+                <tbody id="miniFinanceBody">
+                    {% for item in contas %}
+                    <tr class="mini-row" style="border-bottom: 1px solid #f1f5f9;">
+                        <td style="padding: 10px 12px;">
+                            <span class="cg-status-badge 
+                                {% if item.status == 'pago' %}cg-badge-paid
+                                {% elif item.status == 'atrasado' %}cg-badge-overdue
+                                {% else %}cg-badge-pending{% endif %}">
+                                {{ item.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td style="padding: 10px 12px;">
+                            <span class="tag-mini">{{ item.categoria }}</span>
+                            <small class="d-block text-muted" style="font-size: 11px;">{{ item.nome }}</small>
+                        </td>
+
+                        <td style="padding: 10px 12px;">
+                            <span class="cg-mono" style="font-size: 13px;">
+                                {{ item.vencimento|date:"d/m/Y" }}
+                            </span>
+                        </td>
+
+                        <td style="padding: 10px 12px; text-align: right;">
+                            <button type="button" class="btn-eye-mini" 
+                                onclick="analisarConta(
+                                    '{{ item.id }}', 
+                                    '{{ item.nome|escapejs }}', 
+                                    '{{ item.empresa|default:""|escapejs }}', 
+                                    '{{ item.valor|stringformat:".2f" }}', 
+                                    '{{ item.vencimento|date:"d/m/Y" }}', 
+                                    '{{ item.categoria }}', 
+                                    '{{ item.status }}'
+                                )">
+                                <i class="ph ph-magnifying-glass"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <i class="ph ph-calendar-blank d-block fs-2 mb-2"></i>
+                            Nenhuma obrigação encontrada no banco de dados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </main>
+
+        <aside class="cg-panel-right">
+            <div class="cg-card cg-form-panel">
+                <div class="cg-card-header">
+                    <h2 class="cg-card-title">Agendar Obrigação</h2>
+                    <p class="cg-card-note">Lançamento rápido vindo do banco.</p>
+                </div>
+
+                <form class="cg-form" id="cg-form-agendar" method="POST">
+                    {% csrf_token %}
+                    
+                       <!-- Campo oculto para armazenar o ID da conta em análise -->                   
+                    <div class="cg-form-group">
+                        <label for="cg-nome-despesa">Nome da Conta</label>
+                        <input type="text" class="form-control" name="nome" id="cg-nome-despesa" placeholder="Ex: Energia CPFL" required>
+                    </div>
+
+                    <div class="cg-form-group">
+                        <label for="cg-fornecedor">Fornecedor</label>
+                        <input type="text" class="form-control" name="fornecedor" id="cg-fornecedor" placeholder="Ex: CPFL S.A.">
+                    </div>
+
+                    <div class="cg-form-row">
+                        <div class="cg-form-group w-100">
+                            <label for="cg-valor">Valor</label>
+                            <div class="cg-input-money">
+                                <span class="prefix">R$</span>
+                                <input type="number" step="0.01" class="form-control cg-mono" name="valor" id="cg-valor" placeholder="0,00" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cg-form-row d-flex gap-3">
+                        <div class="cg-form-group flex-grow-1">
+                            <label for="cg-vencimento">Vencimento</label>
+                            <input type="date" class="form-control" name="vencimento" id="cg-vencimento" required>
+                        </div>
+                        <div class="cg-form-group flex-grow-1">
+                            <label for="cg-categoria">Categoria</label>
+                            <select class="form-select" name="categoria" id="cg-categoria">
+                                <option value="Fixa">Fixa</option>
+                                <option value="Variável">Variável</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="cg-recorrencia-box">
+                        <label class="cg-pill-label">Recorrência</label>
+                        <div class="cg-radio-pills">
+                            <input type="radio" name="cg-recorrencia" id="rec-unica" value="unica" checked>
+                            <label for="rec-unica">Única</label>
+
+                            <input type="radio" name="cg-recorrencia" id="rec-mensal" value="mensal">
+                            <label for="rec-mensal">Mensal</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="cg-btn-primary w-100 mt-3">
+                        <i class="ph ph-floppy-disk"></i> Salvar no Banco
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'assets/js/financeiro/contas.js' %}"></script>
+{% endblock %}

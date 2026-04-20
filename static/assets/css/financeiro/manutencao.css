@@ -1,0 +1,203 @@
+/* ==========================================================================
+   GEANGESTÃO - CENTRAL DE MANUTENÇÃO (PREMIUM SPLIT-SCREEN)
+   Namespace: cg-maint-
+   ========================================================================== */
+
+:root {
+    --cg-maint-primary: #2563eb;          /* Azul SaaS Principal */
+    --cg-maint-primary-hover: #1d4ed8;
+    --cg-maint-bg: #f8fafc;               /* Cinza Ultra-claro de fundo */
+    --cg-maint-surface: #ffffff;          /* Branco Puro para Cards */
+    --cg-maint-border: #e2e8f0;           /* Bordas de 1px sutis */
+    --cg-maint-text-main: #1e293b;        /* Texto quase preto */
+    --cg-maint-text-muted: #64748b;       /* Texto auxiliar */
+    
+    /* Cores Semânticas (Badges) */
+    --cg-maint-critico: #fee2e2;
+    --cg-maint-critico-text: #991b1b;
+    --cg-maint-necessario: #fef3c7;
+    --cg-maint-necessario-text: #92400e;
+    --cg-maint-melhoria: #d1fae5;
+    --cg-maint-melhoria-text: #065f46;
+
+    --cg-maint-radius: 12px;
+    --cg-maint-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* Container Principal - Blindagem de Scroll e Layout */
+.maint-page {
+    background-color: var(--cg-maint-bg);
+    min-height: 100vh;
+    padding: 1.5rem;
+    font-family: 'Inter', sans-serif;
+    color: var(--cg-maint-text-main);
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden; /* Mata o scroll horizontal de vez */
+}
+
+/* Grid Estrutural (8/4) - Padrão Enterprise */
+.maint-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px; /* Coluna da direita fixa em 400px */
+    gap: 2rem;
+    align-items: start;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+/* --- COLUNA ESQUERDA: MURAL DE CHAMADOS --- */
+.maint-panel--tickets {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.maint-card--header {
+    background: var(--cg-maint-surface);
+    padding: 1.2rem 2rem;
+    border-radius: var(--cg-maint-radius);
+    border: 1px solid var(--cg-maint-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--cg-maint-shadow);
+}
+
+.maint-card__heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--cg-maint-text-main);
+}
+
+/* Cards de Chamado (Estética Soft UI) */
+.maint-ticket-item {
+    background: var(--cg-maint-surface);
+    border: 1px solid var(--cg-maint-border);
+    border-radius: var(--cg-maint-radius);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--cg-maint-shadow);
+    cursor: pointer;
+}
+
+.maint-ticket-item:hover {
+    border-color: var(--cg-maint-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Badges de Urgência */
+.maint-badge {
+    display: inline-flex;
+    padding: 0.3rem 0.8rem;
+    border-radius: 99px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.8rem;
+}
+
+.maint-badge--critico { background: var(--cg-maint-critico); color: var(--cg-maint-critico-text); }
+.maint-badge--necessario { background: var(--cg-maint-necessario); color: var(--cg-maint-necessario-text); }
+.maint-badge--melhoria { background: var(--cg-maint-melhoria); color: var(--cg-maint-melhoria-text); }
+
+/* --- COLUNA DIREITA: FORMULÁRIO FIXO (STICKY) --- */
+.maint-panel--actions {
+    position: sticky;
+    top: 1.5rem; /* Distância do topo ao scrollar */
+}
+
+.maint-card--form {
+    background: var(--cg-maint-surface);
+    padding: 2rem;
+    border-radius: var(--cg-maint-radius);
+    border: 1px solid var(--cg-maint-border);
+    box-shadow: var(--cg-maint-shadow);
+}
+
+/* Estilização de Formulários Premium */
+.maint-form-group {
+    margin-bottom: 1.2rem;
+}
+
+.maint-form-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--cg-maint-text-muted);
+}
+
+.maint-input, .maint-select, .maint-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--cg-maint-border);
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    background: #fdfdfd;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+.maint-input:focus, .maint-select:focus, .maint-textarea:focus {
+    outline: none;
+    border-color: var(--cg-maint-primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    background: #ffffff;
+}
+
+/* Botão de Ação Principal */
+.maint-button--primary {
+    background: var(--cg-maint-primary);
+    color: #ffffff;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 1rem;
+}
+
+.maint-button--primary:hover {
+    background: var(--cg-maint-primary-hover);
+}
+
+/* Elementos de Texto e Monoespaçados */
+.maint-ticket-id {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--cg-maint-text-muted);
+    font-size: 0.8rem;
+}
+
+.maint-ticket-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0.4rem 0;
+    color: var(--cg-maint-text-main);
+}
+
+/* --- RESPONSIVIDADE (MOBILE-FIRST) --- */
+@media (max-width: 1100px) {
+    .maint-grid {
+        grid-template-columns: 1fr; /* Empilha no mobile/tablet */
+    }
+    .maint-panel--actions {
+        position: static;
+        order: -1; /* Joga o formulário para cima em telas pequenas */
+    }
+}

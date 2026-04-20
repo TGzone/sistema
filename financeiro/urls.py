@@ -9,4 +9,5 @@ urlpatterns = [
     path('contas/', views.contas, name='contas'),
     path('manutencao/', views.manutencao, name='manutencao'),
     path('bancos/', views.bancos, name='bancos'),
+    path('contas/<int:conta_id>/', views.conta_detalhes, name='conta_detalhes'),
 ]

@@ -23,12 +23,32 @@ class Movimentacao(models.Model):
     data = models.DateField(default=timezone.now)
     origem_whatsapp = models.BooleanField(default=False)
 
-class ContaFixa(models.Model):
+class Obrigacao(models.Model): 
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('pago', 'Pago'),
+        ('atrasado', 'Atrasado'),
+    ]
+    RECORRENCIA_CHOICES = [
+        ('unica', 'Única'),
+        ('mensal', 'Mensal'),
+        ('anual', 'Anual'),
+    ]
+
     igreja = models.ForeignKey('igrejas.Igreja', on_delete=models.CASCADE)
-    nome = models.CharField(max_length=100) # Ex: Luz, Água
-    empresa = models.CharField(max_length=100)
-    vencimento_dia = models.IntegerField()
-    valor_estimado = models.DecimalField(max_digits=10, decimal_places=2)
+    nome = models.CharField(max_length=100) # Ex: Conta de Energia
+    empresa = models.CharField(max_length=100, blank=True, null=True) # Fornecedor
+    categoria = models.CharField(max_length=50, default='Outros') # Ex: Manutenção, Utilidades
+    
+    valor = models.DecimalField(max_digits=10, decimal_places=2) # Valor real
+    vencimento = models.DateField() # Data exata (DD/MM/YYYY)
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    recorrencia = models.CharField(max_length=20, choices=RECORRENCIA_CHOICES, default='mensal')
+    observacao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome} - {self.get_status_display()}"
 
 class Manutencao(models.Model):
     igreja = models.ForeignKey('igrejas.Igreja', on_delete=models.CASCADE)

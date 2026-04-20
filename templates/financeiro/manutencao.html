@@ -1,0 +1,152 @@
+﻿{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Central de Manutenção e Infraestrutura{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/financeiro/manutencao.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="maint-page" aria-label="Central de Manutenção e Infraestrutura">
+    <header class="maint-hero">
+        <div class="maint-hero__content">
+            <div>
+                <p class="maint-hero__eyebrow">Infraestrutura</p>
+                <h1 class="maint-hero__title">
+                    <i class="ph ph-wrench"></i>
+                    Central de Manutenção
+                </h1>
+                <p class="maint-hero__subtitle">
+                    Monitorize chamados, registe solicitações e mantenha sua infraestrutura organizada com processos claros e um painel de acompanhamento centralizado.
+                </p>
+            </div>
+
+            <div class="maint-hero__status">
+                <span class="maint-chip maint-chip--success">Operação estável</span>
+                <span class="maint-chip maint-chip--info">Atualizado em tempo real</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="maint-grid">
+        <aside class="maint-panel maint-panel--tickets" aria-labelledby="ticketsHeading">
+            <div class="maint-card maint-card--header">
+                <div>
+                    <p class="maint-card__label">Chamados abertos</p>
+                    <h2 class="maint-card__heading" id="ticketsHeading">Solicitações pendentes</h2>
+                </div>
+                <span class="maint-badge maint-badge--alert" id="urgentCounterBadge">0</span>
+            </div>
+
+            <div class="maint-card maint-card--list">
+                <div class="maint-ticket-list" id="ticketList" aria-live="polite">
+                    </div>
+                
+                <div class="maint-empty-state" id="emptyState">
+                    <span class="maint-empty-state__icon">✓</span>
+                    <h3>Nenhum chamado pendente</h3>
+                    <p>Ótimo! O quadro está limpo. Adicione uma nova solicitação para começar.</p>
+                </div>
+            </div>
+        </aside>
+
+        <section class="maint-panel maint-panel--actions" aria-labelledby="formHeading">
+            <div class="maint-card maint-card--form">
+                <div class="maint-card__header" style="border:none; padding:0; margin-bottom: 1.5rem;">
+                    <div>
+                        <p class="maint-card__label">Nova solicitação</p>
+                        <h2 class="maint-card__heading" id="formHeading">Registar chamado</h2>
+                    </div>
+                </div>
+
+                <form class="maint-form" id="maintForm" novalidate>
+                    {% csrf_token %}
+                    <div class="maint-form-group">
+                        <label class="maint-form-label" for="titleInput">
+                            Título da solicitação <span class="maint-required">*</span>
+                        </label>
+                        <input id="titleInput" name="title" class="maint-input" type="text" placeholder="Ex: Reparar infiltração na nave" required>
+                    </div>
+
+                    <div class="maint-form-group">
+                        <label class="maint-form-label" for="urgencySelect">
+                            Urgência <span class="maint-required">*</span>
+                        </label>
+                        <select id="urgencySelect" name="urgency" class="maint-select" required>
+                            <option value="">Selecione a urgência</option>
+                            <option value="critico">Crítico</option>
+                            <option value="necessario">Necessário</option>
+                            <option value="melhoria">Melhoria</option>
+                        </select>
+                    </div>
+
+                    <div class="maint-form-group">
+                        <label class="maint-form-label" for="ownerSelect">
+                            Responsável para orçamento <span class="maint-required">*</span>
+                        </label>
+                        <select id="ownerSelect" name="owner" class="maint-select" required>
+                            <option value="">Selecione um responsável</option>
+                            <option value="João Silva|11999999999">João Silva (Manutenção)</option>
+                            <option value="Maria Santos|11988888888">Maria Santos (Compras)</option>
+                            <option value="Carlos Lima|11977777777">Carlos Lima (Infra)</option>
+                        </select>
+                    </div>
+
+                    <div class="maint-form-group">
+                        <label class="maint-form-label" for="descriptionTextarea">Descrição detalhada</label>
+                        <textarea id="descriptionTextarea" name="description" class="maint-textarea" rows="4" placeholder="Descreva o problema aqui..." required></textarea>
+                    </div>
+
+                    <div class="maint-form-group">
+                        <label class="maint-checkbox" style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input id="notifyWhatsapp" type="checkbox" name="notifyWhatsapp" checked>
+                            <span class="maint-checkbox__text" style="font-size: 0.85rem; font-weight: 500;">
+                                <i class="ph ph-whatsapp-logo" style="color: #25D366;"></i> Enviar via WhatsApp
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="maint-form-actions">
+                        <button type="submit" class="maint-button maint-button--primary">
+                            <i class="ph ph-plus"></i> Criar Solicitação
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="maint-card maint-card--compact">
+                <p class="maint-card__label">Indicadores</p>
+                <h2 class="maint-card__heading" style="margin-bottom: 1rem;">Resumo rápido</h2>
+                <dl class="maint-stats">
+                    <div class="maint-stats__item">
+                        <dt>Total em aberto</dt>
+                        <dd id="statOpen">0</dd>
+                    </div>
+                    <div class="maint-stats__item">
+                        <dt>Tempo médio</dt>
+                        <dd id="statAverage">24h</dd>
+                    </div>
+                </dl>
+            </div>
+        </section>
+    </main>
+
+    <div class="maint-modal" id="maintModal">
+        <div class="maint-modal__backdrop" data-action="close-modal"></div>
+        <div class="maint-modal__panel">
+            <h2 class="maint-modal__title" style="display: flex; align-items: center; gap: 10px; color: var(--maint-success);">
+                <i class="ph ph-check-circle"></i> Sucesso!
+            </h2>
+            <p style="margin: 1rem 0; color: var(--maint-text-muted);">A solicitação foi registada e o responsável foi notificado.</p>
+            <div style="background: var(--maint-bg); padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+                <strong>Chamado:</strong> <span id="modalTicket">-</span><br>
+                <strong>Responsável:</strong> <span id="modalOwner">-</span>
+            </div>
+            <button type="button" class="maint-button maint-button--primary" style="margin-top: 1.5rem;" data-action="close-modal">Entendido</button>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'assets/js/financeiro/manutencao.js' %}"></script>
+{% endblock %}

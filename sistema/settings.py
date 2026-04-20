@@ -96,7 +96,8 @@ USE_TZ = True
 
 # 9. ARQUIVOS ESTÁTICOS (CSS, JS, IMAGENS)
 #STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
