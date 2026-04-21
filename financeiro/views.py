@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
+from django.utils import timezone
 from .models import Movimentacao, Obrigacao, Manutencao, DadosBancarios
 from igrejas.models import Igreja
 
@@ -7,195 +8,143 @@ from igrejas.models import Igreja
 # 0. DASHBOARD FINANCEIRO PRINCIPAL
 # =========================================================
 def financeiro(request):
-    return render(request, "financeiro/financeiro.html")  
+    """Renderiza a página principal do módulo financeiro."""
+    return render(request, "financeiro/financeiro.html")
 
 # =========================================================
-# 1. VIEW DE MOVIMENTAÇÕES (Caixa Real / Extrato Geral)
+# 1. FLUXO DE REGISTROS (Movimentações / Entradas)
 # =========================================================
 def movimentacoes(request):
-    igreja_atual = Igreja.objects.first() # Gambiarra temporária até ligarmos o auth_user
+    # Usando a primeira igreja como contexto (ajuste conforme seu sistema de login)
+    igreja_atual = Igreja.objects.first()
 
-    # === LÓGICA DE SALVAR LANÇAMENTO REAL NO BANCO ===
     if request.method == 'POST':
-        tipo = request.POST.get('tipo') # 'ENTRADA' ou 'SAIDA'
-        categoria = request.POST.get('categoria')
-        descricao = request.POST.get('descricao')
-        valor = request.POST.get('valor')
-        data = request.POST.get('data')
-
-        if valor:
-            valor = valor.replace(',', '.') # Prevenção contra vírgula do Brasil
-
+        # Registra uma Entrada manual (Ex: Dízimos, Ofertas)
         Movimentacao.objects.create(
             igreja=igreja_atual,
-            tipo=tipo,
-            categoria=categoria,
-            descricao=descricao,
-            valor=valor,
-            data=data
+            tipo='ENTRADA',
+            categoria=request.POST.get('categoria'),
+            descricao=request.POST.get('descricao'),
+            valor=request.POST.get('valor'),
+            data=timezone.now()
         )
         return redirect('financeiro:movimentacoes')
 
-    # === LÓGICA DE EXIBIÇÃO ===
-    historico = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data', '-id')[:15]
+    # Busca o histórico completo para a tabela
+    movs = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data')
     
-    context = {
-        'historico': historico,
-        # Adicionado 'TRANSFERENCIA' caso precise registrar envio de malotes aqui futuramente
-        'categorias': ['DIZIMO', 'OFERTA', 'MISSIONARIA', 'AVULSA', 'TRANSFERENCIA', 'OUTROS']
-    }
-    return render(request, "financeiro/movimentacoes.html", context)
+    # Categorias para o seletor do formulário
+    categorias = ['DIZIMO', 'OFERTA', 'MISSIONARIA', 'AVULSA', 'OUTROS']
+    
+    return render(request, "financeiro/movimentacao.html", {
+        'movimentacoes': movs,
+        'categorias': categorias
+    })
 
 # =========================================================
-# 2. VIEW DE CONTAS (Previsões e Obrigações Fixas)
+# 2. CENTRAL DE OBRIGAÇÕES (Contas a Pagar)
 # =========================================================
 def contas(request):
-    igreja_atual = Igreja.objects.first() 
-    
-    # === LÓGICA DE SALVAR/ATUALIZAR PREVISÃO NO BANCO ===
+    igreja_atual = Igreja.objects.first()
+
     if request.method == 'POST':
-        conta_id = request.POST.get('conta_id')
-        nome = request.POST.get('nome')
-        fornecedor = request.POST.get('fornecedor')
-        valor = request.POST.get('valor')
-        vencimento = request.POST.get('vencimento')
-        categoria = request.POST.get('categoria')
-        recorrencia = request.POST.get('cg-recorrencia')
-        tipo = request.POST.get('tipo', 'SAIDA') # Define se é A Pagar (SAIDA) ou A Receber (ENTRADA)
-
-        if valor:
-            valor = valor.replace(',', '.')
-
-        if conta_id:
-            # UPDATE (Atualiza conta existente)
-            conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
-            conta.nome = nome
-            conta.empresa = fornecedor
-            conta.valor = valor
-            conta.vencimento = vencimento
-            conta.categoria = categoria
-            conta.recorrencia = recorrencia if recorrencia else 'unica'
-            conta.tipo = tipo
-            conta.save() 
-        else:
-            # INSERT (Cria nova conta)
-            Obrigacao.objects.create(
-                igreja=igreja_atual,
-                nome=nome,
-                empresa=fornecedor,
-                valor=valor,
-                vencimento=vencimento,
-                categoria=categoria,
-                recorrencia=recorrencia if recorrencia else 'unica',
-                status='pendente',
-                tipo=tipo
-            )
-            
+        # Adiciona uma nova conta para o mês
+        Obrigacao.objects.create(
+            igreja=igreja_atual,
+            descricao=request.POST.get('descricao'),
+            valor=request.POST.get('valor'),
+            vencimento=request.POST.get('vencimento'),
+            status='pendente',
+            recorrencia=request.POST.get('recorrencia', 'unica')
+        )
         return redirect('financeiro:contas')
 
-    # === LÓGICA DE EXIBIÇÃO COM SEPARAÇÃO DE TIPO ===
-    contas_lista = Obrigacao.objects.filter(igreja=igreja_atual).order_by('vencimento')
+    # Lista de contas para a tabela da esquerda
+    obrigacoes = Obrigacao.objects.filter(igreja=igreja_atual).order_by('vencimento')
     
-    # Filtramos separadamente o que é despesa e o que é receita!
-    total_pagar = contas_lista.filter(tipo='SAIDA', status='pendente').aggregate(Sum('valor'))['valor__sum'] or 0
-    total_receber = contas_lista.filter(tipo='ENTRADA', status='pendente').aggregate(Sum('valor'))['valor__sum'] or 0
-    contas_vencidas = contas_lista.filter(tipo='SAIDA', status='atrasado').count() 
-
-    context = {
-        'contas': contas_lista,
-        'total_pagar': total_pagar,
-        'total_receber': total_receber,
-        'contas_vencidas': contas_vencidas,
-    }
-    return render(request, 'financeiro/contas.html', context)
-
+    return render(request, "financeiro/contas.html", {
+        'contas': obrigacoes
+    })
 
 # =========================================================
-# 3. VIEWS DE MANUTENÇÃO E DETALHES
+# 3. LÓGICA DE PAGAMENTO (A conexão Contas -> Banco)
+# =========================================================
+def pagar_conta(request, conta_id):
+    """
+    Função que altera o status da conta e gera a saída automática no banco.
+    """
+    igreja_atual = Igreja.objects.first()
+    conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
+
+    if request.method == 'POST':
+        # 1. Marca a conta como paga
+        conta.status = 'pago'
+        conta.save()
+
+        # 2. CRIA A SAÍDA NO BANCO (Subtração automática)
+        # Isso faz com que o saldo no Cockpit Bancário diminua no mesmo instante.
+        Movimentacao.objects.create(
+            igreja=igreja_atual,
+            tipo='SAIDA',
+            categoria='PAGAMENTO',
+            descricao=f"Pgto: {conta.descricao}",
+            valor=conta.valor,
+            data=timezone.now()
+        )
+
+    return redirect('financeiro:contas')
+
+# =========================================================
+# 4. COCKPIT BANCÁRIO (Saldos e Contas)
+# =========================================================
+def banco(request):
+    igreja_atual = Igreja.objects.first()
+    
+    # Cálculos matemáticos para os Cards de monitoramento
+    total_entradas = Movimentacao.objects.filter(igreja=igreja_atual, tipo='ENTRADA').aggregate(Sum('valor'))['valor__sum'] or 0
+    total_saidas = Movimentacao.objects.filter(igreja=igreja_atual, tipo='SAIDA').aggregate(Sum('valor'))['valor__sum'] or 0
+    
+    # Saldo Real (Entradas - Saídas)
+    saldo_atual = total_entradas - total_saidas
+    
+    # Dados da conta bancária física da igreja
+    dados_bancarios = DadosBancarios.objects.filter(igreja=igreja_atual).first()
+
+    context = {
+        'saldo_atual': saldo_atual,
+        'entradas': total_entradas,
+        'saidas': total_saidas,
+        'dados_banco': dados_bancarios
+    }
+    return render(request, "financeiro/banco.html", context)
+
+# =========================================================
+# 5. AUXILIARES: DETALHES E NOVA CONTA BANCÁRIA
+# =========================================================
+def conta_detalhes(request, conta_id):
+    igreja_atual = Igreja.objects.first()
+    conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
+    return render(request, "financeiro/conta_detalhes.html", {'conta': conta})
+
+def nova_conta(request):
+    """Salva os dados bancários institucionais."""
+    if request.method == 'POST':
+        igreja_atual = Igreja.objects.first()
+        DadosBancarios.objects.update_or_create(
+            igreja=igreja_atual,
+            defaults={
+                'nome_banco': request.POST.get('banco'),
+                'agencia': request.POST.get('agencia'),
+                'conta': request.POST.get('conta'),
+                'chave_pix': request.POST.get('chave_pix')
+            }
+        )
+    return redirect('financeiro:banco')
+
+# =========================================================
+# 6. CENTRAL DE MANUTENÇÃO
 # =========================================================
 def manutencao(request):
     igreja_atual = Igreja.objects.first()
     necessidades = Manutencao.objects.filter(igreja=igreja_atual).order_by('-status')
     return render(request, "financeiro/manutencao.html", {'manutencao': necessidades})
-
-def conta_detalhes(request, conta_id):
-    igreja_atual = Igreja.objects.first()
-    conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
-    return render(request, "financeiro/conta_detalhes.html", {'conta': conta})      
-
-
-# =========================================================
-# 4. COCKPIT BANCÁRIO (Espelho e Saldo)
-# =========================================================
-def banco(request):
-    igreja_atual = Igreja.objects.first() 
-    
-    # Puxa TODAS as contas bancárias da unidade (Grid)
-    contas_bancarias = DadosBancarios.objects.filter(igreja=igreja_atual)
-    
-    # Puxa o Extrato (Últimos 10 malotes/movimentações)
-    extrato = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data', '-id')[:10]
-    
-    # Função interna para calcular o saldo de cada gaveta dinamicamente
-    def calcular_saldo_gaveta(categoria_nome):
-        entradas = Movimentacao.objects.filter(
-            igreja=igreja_atual, tipo='ENTRADA', categoria=categoria_nome
-        ).aggregate(Sum('valor'))['valor__sum'] or 0
-        
-        saidas = Movimentacao.objects.filter(
-            igreja=igreja_atual, tipo='SAIDA', categoria=categoria_nome
-        ).aggregate(Sum('valor'))['valor__sum'] or 0
-        
-        return entradas - saidas
-
-    # Calculando as Gavetas
-    saldo_dizimos = calcular_saldo_gaveta('DIZIMO')
-    saldo_ofertas = calcular_saldo_gaveta('OFERTA')
-    saldo_missoes = calcular_saldo_gaveta('MISSIONARIA')
-    saldo_construcao = calcular_saldo_gaveta('OUTROS')
-    
-    # Saldo Consolidado Final
-    saldo_total = saldo_dizimos + saldo_ofertas + saldo_missoes + saldo_construcao
-
-    context = {
-        'igreja': igreja_atual,
-        'contas': contas_bancarias,
-        'extrato': extrato,
-        'saldo_dizimos': saldo_dizimos,
-        'saldo_ofertas': saldo_ofertas,
-        'saldo_missoes': saldo_missoes,
-        'saldo_construcao': saldo_construcao,
-        'saldo_total': saldo_total,
-    }
-    
-    return render(request, 'financeiro/banco.html', context)
-
-
-# =========================================================
-# 5. CRIAR NOVA CONTA BANCÁRIA (POST Apenas)
-# =========================================================
-def nova_conta(request):
-    if request.method == 'POST':
-        igreja_id = request.POST.get('igreja_id')
-        nome_banco = request.POST.get('banco')
-        agencia = request.POST.get('agencia')
-        conta = request.POST.get('conta')
-        chave_pix = request.POST.get('chave_pix')
-
-        try:
-            igreja_obj = Igreja.objects.get(id=igreja_id)
-            
-            DadosBancarios.objects.create(
-                igreja=igreja_obj,
-                banco=nome_banco,
-                agencia=agencia,
-                conta=conta,
-                chave_pix=chave_pix
-            )
-        except Igreja.DoesNotExist:
-            pass 
-
-        # Redireciona de volta ao Cockpit após salvar
-        return redirect('financeiro:banco')
-
-    return redirect('financeiro:banco')

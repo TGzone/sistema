@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- Header de Operação -->
 <div class="cg-movimentacoes-header">
     <div class="cg-header-content">
         <h1 class="cg-header-title">Fluxo de Registros</h1>
@@ -19,9 +18,7 @@
     </div>
 </div>
 
-<!-- Layout Principal -->
 <div class="cg-main-layout">
-    <!-- Formulário de Lançamento Rápido -->
     <div class="cg-form-section">
         <div class="cg-card">
             <div class="cg-card-header">
@@ -31,21 +28,18 @@
                 <form action="#" method="POST" enctype="multipart/form-data" class="cg-form">
                     {% csrf_token %}
 
-                    <!-- Seleção de Membro -->
                     <div class="cg-form-group">
-                        <l abel class="cg-form-label">#PENDENTE DE AJUSTE#</label>
+                        <label class="cg-form-label text-warning">#PENDENTE DE AJUSTE#</label>
                         <label class="cg-form-label">Membro / Doador</label>
                         <div class="cg-member-search-container">
                             <input type="text" name="membro_nome" class="cg-input cg-member-search"
                                    id="memberSearch" placeholder="Digite o nome do membro..." autocomplete="off">
                             <input type="hidden" name="membro_id" id="memberId">
                             <div class="cg-member-dropdown" id="memberDropdown">
-                                <!-- Resultados da busca aparecerão aqui -->
-                            </div>
+                                </div>
                         </div>
                     </div>
 
-                    <!-- Dados da Transação -->
                     <div class="cg-form-row">
                         <div class="cg-form-group">
                             <label class="cg-form-label">Valor (R$)</label>
@@ -57,7 +51,6 @@
                         </div>
                     </div>
 
-                    <!-- Tipo de Entrada -->
                     <div class="cg-form-group">
                         <label class="cg-form-label">Tipo de Entrada</label>
                         <select name="tipo" class="cg-select cg-input">
@@ -69,7 +62,6 @@
                         </select>
                     </div>
 
-                    <!-- Contexto de Ocasião -->
                     <div class="cg-form-group">
                         <label class="cg-form-label">Ocasião</label>
                         <div class="cg-radio-group">
@@ -88,7 +80,6 @@
                         <textarea name="justificativa" id="cg-justificativa" class="cg-textarea cg-input cg-hidden" rows="2" placeholder="Descreva o motivo atípico..."></textarea>
                     </div>
 
-                    <!-- Área de Protocolo Visual -->
                     <div class="cg-form-group">
                         <label class="cg-form-label">Comprovante (Obrigatório)</label>
                         <div class="cg-upload-zone">
@@ -113,77 +104,44 @@
         </div>
     </div>
 
-    <!-- Feed de Atividade Diária -->
     <div class="cg-activity-section">
         <div class="cg-card">
             <div class="cg-card-header">
-                <h2 class="cg-card-title">Registros do Dia</h2>
-                <div class="cg-total-badge">Total: R$ 1.250,00</div>
-            </div>
+                <h2 class="cg-card-title">Registros</h2>
+                </div>
             <div class="cg-card-body">
                 <div class="cg-activity-list">
+                    
+                    {% for mov in movimentacoes %}
                     <div class="cg-activity-item">
                         <div class="cg-activity-info">
-                            <div class="cg-activity-name">Tiago Alves</div>
-                            <div class="cg-activity-meta">Dízimo • Culto de Domingo</div>
+                            <div class="cg-activity-name">{{ mov.descricao }}</div>
+                            <div class="cg-activity-meta">{{ mov.data|date:"d/m" }} • {{ mov.tipo }}</div>
                         </div>
+                        
                         <div class="cg-activity-origin">
-                            <i class="ph ph-desktop" title="Manual via Sistema"></i>
+                            <i class="ph ph-desktop" title="Sistema"></i>
                         </div>
+                        
                         <div class="cg-activity-status">
-                            <span class="cg-status-dot cg-status-synced" title="Sincronizado"></span>
+                            <span class="cg-status-dot cg-status-synced" title="Registrado"></span>
                         </div>
-                        <div class="cg-activity-value">R$ 550,00</div>
+                        
+                        <div class="cg-activity-value {% if mov.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
+                            {% if mov.tipo == 'SAIDA' %}-{% endif %} R$ {{ mov.valor }}
+                        </div>
                     </div>
-
-                    <div class="cg-activity-item">
-                        <div class="cg-activity-info">
-                            <div class="cg-activity-name">Ana Santos</div>
-                            <div class="cg-activity-meta">Oferta • Célula</div>
-                        </div>
-                        <div class="cg-activity-origin">
-                            <i class="ph ph-whatsapp-logo" title="Via WhatsApp/N8N"></i>
-                        </div>
-                        <div class="cg-activity-status">
-                            <span class="cg-status-dot cg-status-pending" title="Pendente Conferência"></span>
-                        </div>
-                        <div class="cg-activity-value">R$ 150,00</div>
-                    </div>
-
-                    <div class="cg-activity-item">
-                        <div class="cg-activity-info">
-                            <div class="cg-activity-name">Carlos Eduardo</div>
-                            <div class="cg-activity-meta">Dízimo • Culto de Domingo</div>
-                        </div>
-                        <div class="cg-activity-origin">
-                            <i class="ph ph-robot" title="Automação"></i>
-                        </div>
-                        <div class="cg-activity-status">
-                            <span class="cg-status-dot cg-status-synced" title="Sincronizado"></span>
-                        </div>
-                        <div class="cg-activity-value">R$ 350,00</div>
-                    </div>
-
-                    <div class="cg-activity-item">
-                        <div class="cg-activity-info">
-                            <div class="cg-activity-name">Maria Silva</div>
-                            <div class="cg-activity-meta">Oferta Missionária • Evento</div>
-                        </div>
-                        <div class="cg-activity-origin">
-                            <i class="ph ph-desktop" title="Manual via Sistema"></i>
-                        </div>
-                        <div class="cg-activity-status">
-                            <span class="cg-status-dot cg-status-pending" title="Pendente Conferência"></span>
-                        </div>
-                        <div class="cg-activity-value">R$ 200,00</div>
-                    </div>
+                    {% empty %}
+                    <div class="text-center p-4 text-muted small">Nenhuma movimentação registrada.</div>
+                    {% endfor %}
+                    
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
 {% block extra_js %}
 <script src="{% static 'assets/js/financeiro/movimentacoes.js' %}"></script>
-{% endblock %}
 {% endblock %}
