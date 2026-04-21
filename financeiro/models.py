@@ -46,6 +46,7 @@ class Obrigacao(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
     recorrencia = models.CharField(max_length=20, choices=RECORRENCIA_CHOICES, default='mensal')
     observacao = models.TextField(blank=True, null=True)
+    tipo = models.CharField(max_length=10, choices=[('ENTRADA', 'Entrada'), ('SAIDA', 'Saída')], default='SAIDA') # Define se é A Pagar (SAIDA) ou A Receber (ENTRADA)
 
     def __str__(self):
         return f"{self.nome} - {self.get_status_display()}"

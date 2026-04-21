@@ -1,41 +1,73 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
 from .models import Movimentacao, Obrigacao, Manutencao, DadosBancarios
 from igrejas.models import Igreja
-from financeiro.models import Obrigacao, Manutencao, DadosBancarios, Movimentacao
-from django.db.models import Sum # Aproveita e já importa isso para calcularmos o Total
-# --- MÓDULO FINANCEIRO ---
 
+# =========================================================
+# 0. DASHBOARD FINANCEIRO PRINCIPAL
+# =========================================================
 def financeiro(request):
     return render(request, "financeiro/financeiro.html")  
 
+# =========================================================
+# 1. VIEW DE MOVIMENTAÇÕES (Caixa Real / Extrato Geral)
+# =========================================================
 def movimentacoes(request):
-    historico = Movimentacao.objects.all().order_by('-data')[:15]
+    igreja_atual = Igreja.objects.first() # Gambiarra temporária até ligarmos o auth_user
+
+    # === LÓGICA DE SALVAR LANÇAMENTO REAL NO BANCO ===
+    if request.method == 'POST':
+        tipo = request.POST.get('tipo') # 'ENTRADA' ou 'SAIDA'
+        categoria = request.POST.get('categoria')
+        descricao = request.POST.get('descricao')
+        valor = request.POST.get('valor')
+        data = request.POST.get('data')
+
+        if valor:
+            valor = valor.replace(',', '.') # Prevenção contra vírgula do Brasil
+
+        Movimentacao.objects.create(
+            igreja=igreja_atual,
+            tipo=tipo,
+            categoria=categoria,
+            descricao=descricao,
+            valor=valor,
+            data=data
+        )
+        return redirect('financeiro:movimentacoes')
+
+    # === LÓGICA DE EXIBIÇÃO ===
+    historico = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data', '-id')[:15]
     
     context = {
         'historico': historico,
-        'categorias': ['DIZIMO', 'OFERTA', 'MISSIONARIA', 'AVULSA', 'OUTROS']
+        # Adicionado 'TRANSFERENCIA' caso precise registrar envio de malotes aqui futuramente
+        'categorias': ['DIZIMO', 'OFERTA', 'MISSIONARIA', 'AVULSA', 'TRANSFERENCIA', 'OUTROS']
     }
     return render(request, "financeiro/movimentacoes.html", context)
 
+# =========================================================
+# 2. VIEW DE CONTAS (Previsões e Obrigações Fixas)
+# =========================================================
 def contas(request):
-    # Pega a primeira igreja do banco de dados (Gambi temporária para testar)
     igreja_atual = Igreja.objects.first() 
     
-    # === LÓGICA DE SALVAR/ATUALIZAR NO BANCO ===
+    # === LÓGICA DE SALVAR/ATUALIZAR PREVISÃO NO BANCO ===
     if request.method == 'POST':
-        conta_id = request.POST.get('conta_id') # Pega o ID oculto!
+        conta_id = request.POST.get('conta_id')
         nome = request.POST.get('nome')
         fornecedor = request.POST.get('fornecedor')
         valor = request.POST.get('valor')
         vencimento = request.POST.get('vencimento')
         categoria = request.POST.get('categoria')
         recorrencia = request.POST.get('cg-recorrencia')
+        tipo = request.POST.get('tipo', 'SAIDA') # Define se é A Pagar (SAIDA) ou A Receber (ENTRADA)
 
         if valor:
             valor = valor.replace(',', '.')
 
         if conta_id:
-            # MODO ATUALIZAÇÃO (UPDATE)
+            # UPDATE (Atualiza conta existente)
             conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
             conta.nome = nome
             conta.empresa = fornecedor
@@ -43,9 +75,10 @@ def contas(request):
             conta.vencimento = vencimento
             conta.categoria = categoria
             conta.recorrencia = recorrencia if recorrencia else 'unica'
-            conta.save() # Salva por cima da antiga!
+            conta.tipo = tipo
+            conta.save() 
         else:
-            # MODO CRIAÇÃO (INSERT)
+            # INSERT (Cria nova conta)
             Obrigacao.objects.create(
                 igreja=igreja_atual,
                 nome=nome,
@@ -54,80 +87,115 @@ def contas(request):
                 vencimento=vencimento,
                 categoria=categoria,
                 recorrencia=recorrencia if recorrencia else 'unica',
-                status='pendente'
+                status='pendente',
+                tipo=tipo
             )
             
         return redirect('financeiro:contas')
 
-    # === LÓGICA DE EXIBIÇÃO ===
+    # === LÓGICA DE EXIBIÇÃO COM SEPARAÇÃO DE TIPO ===
     contas_lista = Obrigacao.objects.filter(igreja=igreja_atual).order_by('vencimento')
     
-    total_pagar = contas_lista.filter(status='pendente').aggregate(Sum('valor'))['valor__sum'] or 0
-    contas_vencidas = contas_lista.filter(status='atrasado').count()
+    # Filtramos separadamente o que é despesa e o que é receita!
+    total_pagar = contas_lista.filter(tipo='SAIDA', status='pendente').aggregate(Sum('valor'))['valor__sum'] or 0
+    total_receber = contas_lista.filter(tipo='ENTRADA', status='pendente').aggregate(Sum('valor'))['valor__sum'] or 0
+    contas_vencidas = contas_lista.filter(tipo='SAIDA', status='atrasado').count() 
 
     context = {
         'contas': contas_lista,
         'total_pagar': total_pagar,
+        'total_receber': total_receber,
         'contas_vencidas': contas_vencidas,
     }
-    
     return render(request, 'financeiro/contas.html', context)
 
+
+# =========================================================
+# 3. VIEWS DE MANUTENÇÃO E DETALHES
+# =========================================================
 def manutencao(request):
-    necessidades = Manutencao.objects.all().order_by('-status')
+    igreja_atual = Igreja.objects.first()
+    necessidades = Manutencao.objects.filter(igreja=igreja_atual).order_by('-status')
     return render(request, "financeiro/manutencao.html", {'manutencao': necessidades})
 
-def bancos(request):
-    info_bancaria = DadosBancarios.objects.all()
-    return render(request, "financeiro/bancos.html", {'bancos': info_bancaria})
-
 def conta_detalhes(request, conta_id):
-    conta = Obrigacao.objects.get(id=conta_id)
+    igreja_atual = Igreja.objects.first()
+    conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
     return render(request, "financeiro/conta_detalhes.html", {'conta': conta})      
 
 
-def banco_espelho(request):
-    igreja_atual = Igreja.objects.first() # Temporário até ter o login pronto
-    dados_bancarios = DadosBancarios.objects.filter(igreja=igreja_atual).first()
+# =========================================================
+# 4. COCKPIT BANCÁRIO (Espelho e Saldo)
+# =========================================================
+def banco(request):
+    igreja_atual = Igreja.objects.first() 
     
-    # Busca todas as movimentações da unidade
-    movimentacoes = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data', '-id')
+    # Puxa TODAS as contas bancárias da unidade (Grid)
+    contas_bancarias = DadosBancarios.objects.filter(igreja=igreja_atual)
     
-    # 1. Cálculo do Saldo Total (Entradas - Saídas)
-    total_entradas = movimentacoes.filter(tipo='ENTRADA').aggregate(Sum('valor'))['valor__sum'] or 0
-    total_saidas = movimentacoes.filter(tipo='SAIDA').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo_total = total_entradas - total_saidas
+    # Puxa o Extrato (Últimos 10 malotes/movimentações)
+    extrato = Movimentacao.objects.filter(igreja=igreja_atual).order_by('-data', '-id')[:10]
+    
+    # Função interna para calcular o saldo de cada gaveta dinamicamente
+    def calcular_saldo_gaveta(categoria_nome):
+        entradas = Movimentacao.objects.filter(
+            igreja=igreja_atual, tipo='ENTRADA', categoria=categoria_nome
+        ).aggregate(Sum('valor'))['valor__sum'] or 0
+        
+        saidas = Movimentacao.objects.filter(
+            igreja=igreja_atual, tipo='SAIDA', categoria=categoria_nome
+        ).aggregate(Sum('valor'))['valor__sum'] or 0
+        
+        return entradas - saidas
 
-    # 2. Cálculo das Gavetas (Buckets)
-    # Dizimos
-    entradas_dizimo = movimentacoes.filter(tipo='ENTRADA', categoria='DIZIMO').aggregate(Sum('valor'))['valor__sum'] or 0
-    saidas_dizimo = movimentacoes.filter(tipo='SAIDA', categoria='DIZIMO').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo_dizimos = entradas_dizimo - saidas_dizimo
-
-    # Ofertas Locais
-    entradas_oferta = movimentacoes.filter(tipo='ENTRADA', categoria='OFERTA').aggregate(Sum('valor'))['valor__sum'] or 0
-    saidas_oferta = movimentacoes.filter(tipo='SAIDA', categoria='OFERTA').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo_ofertas = entradas_oferta - saidas_oferta
-
-    # Missões
-    entradas_missoes = movimentacoes.filter(tipo='ENTRADA', categoria='MISSIONARIA').aggregate(Sum('valor'))['valor__sum'] or 0
-    saidas_missoes = movimentacoes.filter(tipo='SAIDA', categoria='MISSIONARIA').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo_missoes = entradas_missoes - saidas_missoes
-
-    # Construção / Outros
-    entradas_outros = movimentacoes.filter(tipo='ENTRADA', categoria='OUTROS').aggregate(Sum('valor'))['valor__sum'] or 0
-    saidas_outros = movimentacoes.filter(tipo='SAIDA', categoria='OUTROS').aggregate(Sum('valor'))['valor__sum'] or 0
-    saldo_construcao = entradas_outros - saidas_outros
+    # Calculando as Gavetas
+    saldo_dizimos = calcular_saldo_gaveta('DIZIMO')
+    saldo_ofertas = calcular_saldo_gaveta('OFERTA')
+    saldo_missoes = calcular_saldo_gaveta('MISSIONARIA')
+    saldo_construcao = calcular_saldo_gaveta('OUTROS')
+    
+    # Saldo Consolidado Final
+    saldo_total = saldo_dizimos + saldo_ofertas + saldo_missoes + saldo_construcao
 
     context = {
         'igreja': igreja_atual,
-        'banco': dados_bancarios,
-        'saldo_total': saldo_total,
+        'contas': contas_bancarias,
+        'extrato': extrato,
         'saldo_dizimos': saldo_dizimos,
         'saldo_ofertas': saldo_ofertas,
         'saldo_missoes': saldo_missoes,
         'saldo_construcao': saldo_construcao,
-        'extrato': movimentacoes[:10] # Mostra as 10 últimas na tela
+        'saldo_total': saldo_total,
     }
     
     return render(request, 'financeiro/banco.html', context)
+
+
+# =========================================================
+# 5. CRIAR NOVA CONTA BANCÁRIA (POST Apenas)
+# =========================================================
+def nova_conta(request):
+    if request.method == 'POST':
+        igreja_id = request.POST.get('igreja_id')
+        nome_banco = request.POST.get('banco')
+        agencia = request.POST.get('agencia')
+        conta = request.POST.get('conta')
+        chave_pix = request.POST.get('chave_pix')
+
+        try:
+            igreja_obj = Igreja.objects.get(id=igreja_id)
+            
+            DadosBancarios.objects.create(
+                igreja=igreja_obj,
+                banco=nome_banco,
+                agencia=agencia,
+                conta=conta,
+                chave_pix=chave_pix
+            )
+        except Igreja.DoesNotExist:
+            pass 
+
+        # Redireciona de volta ao Cockpit após salvar
+        return redirect('financeiro:banco')
+
+    return redirect('financeiro:banco')

@@ -1,252 +1,98 @@
-/* ==========================================================================
-   VARIÁVEIS DE DESIGN SYSTEM (PADRÃO LUMINA)
-   ========================================================================== */
-:root {
-    --bg-sistema: #f1f5f9;
-    --cartao-bg: #ffffff;
-    --primary: #2563eb;
-    --primary-light: #eff6ff;
-    --text-main: #0f172a;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
+/* Importando a base do CSS de movimentações caso queira separar 100% depois */
+@import url('movimentacoes.css');
+
+/* =========================================================
+   contas.css - Ajustes Específicos para a Central de Obrigações
+========================================================= */
+
+/* Ocultador Universal */
+.cg-hidden {
+    display: none !important;
 }
 
-/* ==========================================================================
-   ESTRUTURA GLOBAL
-   ========================================================================== */
-html, body {
-    background-color: var(--bg-sistema);
+/* Painel de Ações do Formulário (Para colocar botões lado a lado) */
+.cg-form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.cg-form-actions button {
+    flex: 1; /* Os botões dividem o espaço por igual */
+}
+
+/* Botão de Sucesso (Marcar como Pago) */
+.cg-btn-success {
+    background-color: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 20px;
     font-family: 'Inter', sans-serif;
-    color: var(--text-main);
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-    overflow-y: auto !important;
-}
-
-.cg-page-shell {
-    padding: 30px;
-}
-
-/* Header Compacto */
-.cg-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-}
-
-.cg-page-title {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin: 0;
-}
-
-.cg-month-selector {
-    width: 200px !important;
-    padding: 8px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
     font-weight: 600;
-    font-size: 13px;
-}
-
-/* ==========================================================================
-   BARRA DE MONITORAMENTO (KPIs)
-   ========================================================================== */
-.cg-kpis-row {
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
     display: flex;
-    justify-content: space-between;
-    background: var(--cartao-bg);
-    padding: 20px 30px;
-    border-radius: 20px;
-    margin-bottom: 24px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.03);
-    gap: 20px;
-}
-
-.cg-kpi-card { flex: 1; display: flex; flex-direction: column; gap: 4px; }
-.cg-kpi-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-.cg-kpi-value { font-size: 18px; font-weight: 700; }
-
-/* ==========================================================================
-   WORKSPACE & GRID
-   ========================================================================== */
-.cg-workspace {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 350px;
-    gap: 24px;
-    align-items: start;
-}
-
-.cg-panel-left { min-width: 0; display: flex; flex-direction: column; gap: 24px; }
-
-/* ==========================================================================
-   MINI TABLE (PADRÃO LUMINA)
-   ========================================================================== */
-.mini-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-
-.mini-table th {
-    text-align: left;
-    font-size: 10px;
-    color: var(--text-muted);
-    padding: 10px 12px;
-    text-transform: uppercase;
-    font-weight: 700;
-    border-bottom: 2px solid #f8fafc;
-}
-
-.mini-table td {
-    padding: 10px 12px;
-    font-size: 13px;
-    border-bottom: 1px solid #f8fafc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Distribuição das colunas */
-.mini-table th:nth-child(1), .mini-table td:nth-child(1) { width: 25%; }
-.mini-table th:nth-child(2), .mini-table td:nth-child(2) { width: 25%; }
-.mini-table th:nth-child(3), .mini-table td:nth-child(3) { width: 30%; }
-.mini-table th:nth-child(4), .mini-table td:nth-child(4) { width: 20%; text-align: right; }
-
-.mini-table tr:hover {
-    background-color: #f8fafc;
-}
-
-/* ==========================================================================
-   TAGS MINI (STATUS / TIPO)
-   ========================================================================== */
-.tag-mini {
-    font-size: 10px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-weight: 700;
-    text-transform: uppercase;
-    display: inline-block;
-}
-
-/* Status */
-.tag-success {
-    background: #dcfce7;
-    color: var(--success);
-}
-
-.tag-warning {
-    background: #fff7ed;
-    color: var(--warning);
-}
-
-.tag-danger {
-    background: #fee2e2;
-    color: var(--danger);
-}
-
-/* ==========================================================================
-   BOTÃO MINI (AÇÃO)
-   ========================================================================== */
-.btn-eye-mini {
-    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #f8fafc;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: 0.2s;
 }
 
-.btn-eye-mini:hover {
-    background: var(--primary-light);
-    color: var(--primary);
-    border-color: var(--primary);
-    transform: translateY(-1px);
+.cg-btn-success:hover {
+    background-color: #059669;
 }
 
-/* ==========================================================================
-   FERRAMENTA LATERAL (SIDEBAR)
-   ========================================================================== */
-.cg-panel-right {
-    position: sticky;
-    top: 20px;
+/* Barra de Pesquisa acima da lista */
+.cg-search-bar {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.cg-search-bar i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+}
+
+.cg-search-bar input {
+    padding-left: 40px; /* Espaço pro ícone da lupa */
+    width: 100%;
+}
+
+/* KPIs de Resumo Rápidos */
+.cg-kpi-grid {
     display: flex;
-    flex-direction: column;
-    gap: 24px;
+    gap: 10px;
+    margin-bottom: 20px;
 }
 
-.cg-form-panel {
-    background: var(--cartao-bg);
-    border-radius: 24px;
-    padding: 25px;
-    border: 1px solid var(--border);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+.cg-kpi-card {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
 }
 
-.cg-form { display: flex; flex-direction: column; gap: 14px; }
-.cg-form label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-
-.cg-form .form-control, .cg-form .form-select {
-    width: 100%;
-    padding: 11px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 14px;
-    background: #fcfdfe;
-}
-
-.cg-btn-primary {
-    width: 100%;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    background: var(--primary);
-    color: white;
+.cg-kpi-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
     font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-    transition: 0.2s;
+    color: #1e293b;
 }
 
-.cg-btn-primary:hover { transform: translateY(-1px); filter: brightness(1.1); }
-
-/* ==========================================================================
-   LIQUIDAÇÃO E STATUS TAGS
-   ========================================================================== */
-.cg-progress-card {
-    background: var(--cartao-bg);
-    border-radius: 24px;
-    padding: 20px;
-    border: 1px solid var(--border);
-}
-
-.cg-progress-track { background: #f1f5f9; height: 8px; border-radius: 10px; overflow: hidden; margin-top: 8px; }
-.cg-progress-fill { height: 100%; background: var(--primary); border-radius: 10px; }
-
-.cg-status-badge {
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-weight: 700;
+.cg-kpi-label {
+    font-size: 0.7rem;
+    color: #64748b;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
-.cg-badge-paid { background: #dcfce7; color: var(--success); }
-.cg-badge-pending { background: #fff7ed; color: var(--warning); }
 
-/* Responsividade Tablet/Mobile */
-@media (max-width: 1200px) {
-    .cg-workspace { grid-template-columns: 1fr; }
-    .cg-panel-right { position: static; order: -1; margin-bottom: 24px; width: 100%; }
-}
+/* Rótulos coloridos dos Radio Buttons de Entrada/Saída */
+.cg-label-saida { border-color: #ef4444; color: #ef4444; }
+.cg-label-entrada { border-color: #10b981; color: #10b981; }
+.cg-radio-input:checked + .cg-label-saida { background: #fef2f2; }
+.cg-radio-input:checked + .cg-label-entrada { background: #ecfdf5; }

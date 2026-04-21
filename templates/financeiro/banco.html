@@ -1,0 +1,197 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espelho Bancário | GeanGestão</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'assets/css/financeiro/banco.css' %}">
+</head>
+<body class="cg-bank-standalone">
+
+    <nav class="top-island-nav">
+        <a href="{% url 'dashboard' %}" class="btn-voltar-safe">
+            <i class="ph ph-arrow-left"></i> Voltar ao Sistema
+        </a>
+        <div class="nav-title-group">
+            <span class="badge bg-primary rounded-pill"><i class="ph ph-eye me-1"></i> MODO LEITURA</span>
+            <div class="nav-title">Cockpit Financeiro • {{ igreja.nome|default:"UNIDADE CENTRAL" }}</div>
+        </div>
+        <div class="spacer"></div> 
+    </nav>
+
+    <div class="container-fluid pt-4">
+        <div class="row">
+            
+            <main class="col-lg-8 p-4">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="mb-0 text-light"><i class="ph ph-wallet me-2"></i>Contas Vinculadas</h4>
+                    <span class="badge bg-secondary text-light">{{ contas|length }} contas ativas</span>
+                </div>
+
+                <div class="cards-container">
+                    {% for conta in contas %}
+                    <div class="virtual-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span class="bank-name fs-5 fw-bold">{{ conta.banco|upper }}</span>
+                            <i class="ph ph-bank fs-2 text-primary opacity-50"></i>
+                        </div>
+                        
+                        <div class="card-details-box mt-4 pt-3">
+                            <div class="detail-item mb-3">
+                                <p class="small text-muted mb-1">Agência / Conta</p>
+                                <strong class="font-mono fs-5 text-light">{{ conta.agencia|default:"0000" }} • {{ conta.conta|default:"00000-0" }}</strong>
+                            </div>
+                            <div class="detail-item">
+                                <p class="small text-muted mb-1">Chave PIX Ativa</p>
+                                <strong class="font-mono text-light">{{ conta.chave_pix|default:"Não cadastrada" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="cg-empty-state w-100">
+                        <i class="ph ph-wallet text-muted mb-3" style="font-size: 48px;"></i>
+                        <h5 class="text-light">Nenhuma conta bancária vinculada</h5>
+                        <p class="text-muted small">Cadastre a primeira conta para visualizar os dados aqui.</p>
+                        <button class="btn btn-outline-light mt-2" data-bs-toggle="modal" data-bs-target="#modalNovaConta">
+                            <i class="ph ph-plus me-2"></i>Cadastrar Primeira Conta
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <h4 class="section-title text-light mb-4 d-flex align-items-center gap-2">
+                    <i class="ph ph-chart-pie-slice text-warning"></i> Resumo de Gavetas (Caixa Virtual)
+                </h4>
+                
+                <div class="row g-3">
+                    <div class="col-md-6 col-xl-3">
+                        <div class="gaveta-card">
+                            <div class="gaveta-icon mb-2"><i class="ph ph-hand-coins fs-2 text-primary"></i></div>
+                            <h6 class="gaveta-name text-muted small mb-1">Dízimos Líquidos</h6>
+                            <p class="gaveta-balance font-mono fs-5 text-light mb-0">R$ {{ saldo_dizimos|floatformat:2|default:"0,00" }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="gaveta-card">
+                            <div class="gaveta-icon mb-2"><i class="ph ph-heart fs-2 text-danger"></i></div>
+                            <h6 class="gaveta-name text-muted small mb-1">Ofertas Locais</h6>
+                            <p class="gaveta-balance font-mono fs-5 text-light mb-0">R$ {{ saldo_ofertas|floatformat:2|default:"0,00" }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="gaveta-card">
+                            <div class="gaveta-icon mb-2"><i class="ph ph-globe-hemisphere-west fs-2 text-success"></i></div>
+                            <h6 class="gaveta-name text-muted small mb-1">Fundo Missões</h6>
+                            <p class="gaveta-balance font-mono fs-5 text-light mb-0">R$ {{ saldo_missoes|floatformat:2|default:"0,00" }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-xl-3">
+                        <div class="gaveta-card">
+                            <div class="gaveta-icon mb-2"><i class="ph ph-buildings fs-2 text-warning"></i></div>
+                            <h6 class="gaveta-name text-muted small mb-1">Construção</h6>
+                            <p class="gaveta-balance font-mono fs-5 text-light mb-0">R$ {{ saldo_construcao|floatformat:2|default:"0,00" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <aside class="col-lg-4 action-panel-dark p-4">
+                
+                <h5 class="fw-bold text-light mb-4">Operações Externas</h5>
+                
+                <div class="d-grid gap-3 mb-5">
+                    <a href="{% url 'financeiro:banco' %}" class="btn btn-primary btn-lg py-3 rounded-4 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <i class="ph ph-paper-plane-right fs-4"></i> Enviar Recurso / Malote
+                    </a>
+                    
+                    <button class="btn btn-outline-light py-2 rounded-4 fw-medium d-flex align-items-center justify-content-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNovaConta">
+                        <i class="ph ph-plus-circle fs-5"></i> Adicionar Conta Bancária
+                    </button>
+                </div>
+                
+                <p class="text-muted small text-center px-3 mb-4 aviso-operacional">
+                    Novas entradas financeiras não são feitas aqui. Utilize o menu <strong>Movimentações</strong>.
+                </p>
+
+                <div class="extrato-list mt-4">
+                    <h6 class="text-muted text-uppercase small fw-bold mb-3 d-flex align-items-center gap-2">
+                        <i class="ph ph-list-dashes"></i> Últimas Transferências
+                    </h6>
+                    
+                    <div class="extrato-scrollable pe-2">
+                        {% for mov in extrato %}
+                        <div class="extrato-item p-3 mb-2 rounded-3">
+                            <div>
+                                <div class="fw-medium small text-light">{{ mov.get_categoria_display }}</div>
+                                <div class="text-muted text-sm">{{ mov.data|date:"d/m/Y" }} • {{ mov.descricao|default:"Transferência" }}</div>
+                            </div>
+                            <div class="font-mono fw-bold {% if mov.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
+                                {% if mov.tipo == 'ENTRADA' %}+{% else %}-{% endif %} {{ mov.valor|floatformat:2 }}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center p-4 border border-light border-opacity-10 rounded-3">
+                            <i class="ph ph-receipt fs-2 text-muted mb-2 opacity-50"></i>
+                            <p class="text-muted small mb-0">Nenhum malote movimentado.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNovaConta" tabindex="-1" aria-labelledby="modalNovaContaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content cg-modal-dark">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 pb-3">
+                    <h5 class="modal-title fw-bold text-light" id="modalNovaContaLabel">Cadastrar Nova Conta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formNovaConta" method="POST" action="{% url 'financeiro:nova_conta' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="igreja_id" value="{{ igreja.id }}">
+
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Nome do Banco</label>
+                            <input type="text" name="banco" class="form-control bg-dark border-secondary text-light" placeholder="Ex: Nubank, Bradesco..." required>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Agência</label>
+                                <input type="text" name="agencia" class="form-control bg-dark border-secondary text-light font-mono" placeholder="0000" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small text-muted">Conta (com dígito)</label>
+                                <input type="text" name="conta" class="form-control bg-dark border-secondary text-light font-mono" placeholder="00000-0" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small text-muted">Chave PIX (Opcional)</label>
+                            <input type="text" name="chave_pix" class="form-control bg-dark border-secondary text-light font-mono" placeholder="CNPJ, E-mail...">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold d-flex justify-content-center align-items-center gap-2">
+                            <i class="ph ph-check-circle fs-5"></i> Salvar Conta Bancária
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'assets/js/financeiro/banco.js' %}"></script>
+</body>
+</html>
