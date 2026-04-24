@@ -1,0 +1,208 @@
+/* ==========================================================================
+   GEANGESTÃO - SOLICITAÇÃO DE ACESSO
+   Namespace: cg-
+   ========================================================================== */
+
+:root {
+    --cg-primary: #2563eb;
+    --cg-primary-hover: #1d4ed8;
+    --cg-bg-color: #f1f5f9;
+    --cg-surface: #ffffff;
+    --cg-border: #e2e8f0;
+    --cg-text-main: #0f172a;
+    --cg-text-muted: #64748b;
+    --cg-radius: 16px;
+    --cg-input-bg: #f8fafc;
+}
+
+body.cg-auth-body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--cg-bg-color);
+    color: var(--cg-text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-image: radial-gradient(circle at top right, #e0e7ff 0%, transparent 40%),
+                      radial-gradient(circle at bottom left, #dbeafe 0%, transparent 40%);
+}
+
+.cg-auth-layout {
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.cg-auth-card {
+    background: var(--cg-surface);
+    border-radius: var(--cg-radius);
+    padding: 2.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Header */
+.cg-auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.cg-logo-placeholder {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--cg-primary), #3b82f6);
+    color: white;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 1rem auto;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.cg-auth-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.cg-auth-header p {
+    font-size: 14px;
+    color: var(--cg-text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Formulário */
+.cg-form-section {
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+    border: 1px solid var(--cg-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.cg-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cg-text-main);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cg-section-title i {
+    color: var(--cg-primary);
+    font-size: 18px;
+}
+
+.cg-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.cg-input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.cg-input-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.cg-input-group:last-child {
+    margin-bottom: 0;
+}
+
+.cg-input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--cg-text-main);
+}
+
+.cg-input-group input,
+.cg-input-group select {
+    padding: 12px 14px;
+    border: 1px solid var(--cg-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background-color: var(--cg-input-bg);
+    color: var(--cg-text-main);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.cg-input-group input:focus,
+.cg-input-group select:focus {
+    border-color: var(--cg-primary);
+    background-color: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Botões e Footer */
+.cg-form-actions {
+    margin-top: 2rem;
+}
+
+.cg-btn-submit {
+    width: 100%;
+    background: var(--cg-primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease;
+}
+
+.cg-btn-submit:hover {
+    background: var(--cg-primary-hover);
+}
+
+.cg-auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 14px;
+    color: var(--cg-text-muted);
+}
+
+.cg-auth-footer a {
+    color: var(--cg-primary);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.cg-auth-footer a:hover {
+    color: var(--cg-primary-hover);
+    text-decoration: underline;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .cg-auth-card {
+        padding: 1.5rem;
+    }
+    .cg-form-row {
+        grid-template-columns: 1fr; /* Quebra para 1 coluna no celular */
+        gap: 0;
+    }
+}

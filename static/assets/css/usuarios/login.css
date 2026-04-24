@@ -1,0 +1,351 @@
+/* =========================================
+   IMPORTAÇÕES E RESET BÁSICO
+========================================= */
+/* Importando as fontes do Google e ícones do FontAwesome */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+/* Zerando margens padrão do navegador e definindo a fonte principal */
+* {
+    box-sizing: border-box;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Corpo da página ocupando 100% da altura da tela */
+body {
+    background-color: #ffffff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; /* <-- ADICIONE ISSO AQUI */
+}
+
+
+/* Container mestre que divide a tela em duas metades (flexbox) */
+.main-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+}
+
+/* =========================================
+   LADO ESQUERDO: PAINEL DA IMAGEM
+========================================= */
+/* Configuração da metade esquerda, onde fica o texto e a foto */
+.info-panel {
+    flex: 1; /* Ocupa metade do espaço disponível */
+    position: relative;
+    overflow: hidden;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Imagem de fundo da igreja (AJUSTADO: Sem o blur para ficar nítido) */
+.church-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('/static/assets/img/church_bg.png') no-repeat center center / cover; 
+    z-index: 1;
+}
+
+/* Película (overlay) azulada por cima da foto para dar contraste no texto */
+.info-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 100, 0.4); 
+    z-index: 2;
+}
+
+/* Agrupa todo o conteúdo (textos e ícones) acima do fundo azul */
+.info-content {
+    position: relative;
+    z-index: 3;
+    max-width: 600px;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Estilo do logo/ícone principal da Igreja */
+.church-icon {
+    width: 100px; 
+    height: auto;
+    margin-bottom: 2rem;
+}
+
+/* Título principal */
+h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Detalhe em azul claro no título */
+h1 span {
+    color: #4facfe; 
+}
+
+/* Subtítulo logo abaixo do H1 */
+h1 + p {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    margin-bottom: 3rem;
+    line-height: 1.5;
+}
+
+/* Grid com os 4 ícones (Membros, Eventos, Doações, Relatórios) */
+.icon-grid {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    margin-bottom: 4rem;
+}
+
+/* Cada bloquinho de ícone + texto */
+.icon-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1.1rem;
+}
+
+.icon-block i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Versículo - Estilo da citação */
+.quote {
+    font-style: italic;
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Versículo - Referência bíblica */
+.verse {
+    font-size: 1.1rem;
+}
+
+/* =========================================
+   LADO DIREITO: PAINEL DE LOGIN
+========================================= */
+/* Configuração da metade direita (AJUSTADO: fundo 100% branco para colar no card) */
+.login-panel {
+    flex: 1; /* Ocupa a outra metade */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff; /* Fundo branco puro */
+}
+
+/* Área que envolve os campos de input (AJUSTADO: Sem bordas ou sombras pra fundir com o painel) */
+.login-card {
+    background: #fff;
+    padding: 3rem;
+    width: 100%;
+    max-width: 480px;
+    text-align: center;
+}
+
+/* Ícone de cadeado no topo do formulário */
+.padlock-icon {
+    background-color: #e3f2fd; /* Bolinha azul claro */
+    color: #007bff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    margin: 0 auto 1rem auto;
+}
+
+/* Título do formulário (Bem-vindo) */
+h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+}
+
+/* Subtítulo do formulário */
+.subtitle {
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+/* =========================================
+   CAMPOS DO FORMULÁRIO (INPUTS)
+========================================= */
+/* Agrupamento de cada campo (Label + Input) */
+.input-group {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+/* Textos descritivos em cima do input (ex: "E-mail") */
+.input-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Wrapper para posicionar os ícones dentro do input */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo padrão para os ícones dentro do input (Email e Senha) */
+.input-wrapper i {
+    position: absolute;
+    color: #aaa;
+    pointer-events: none;
+    /* Adicione estas duas linhas para centralizar na vertical cravado: */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Olha o icon-password aqui no lugar do icon-lock */
+.input-wrapper .icon-email,
+.input-wrapper .icon-password { 
+    left: 1rem;
+    width: 20px; 
+    text-align: center; 
+}
+
+
+
+/* Ícone de olho na senha (este precisa ser clicável futuramente) */
+.input-wrapper .icon-eye {
+    right: 1rem;
+    pointer-events: all; 
+    cursor: pointer;
+}
+
+/* O campo onde o usuário digita de fato */
+.input-wrapper input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 3rem; /* Espaço maior na esquerda por causa do ícone */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    font-size: 1rem;
+}
+
+/* Borda azul ao clicar no campo */
+.input-wrapper input:focus {
+    border-color: #007bff;
+}
+
+/* =========================================
+   RODAPÉ DO FORMULÁRIO E BOTÕES
+========================================= */
+/* Alinha o "Lembrar-me" e o "Esqueci a senha" na mesma linha */
+.form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+}
+
+.remember-me {
+    color: #666;
+}
+
+.forgot-password {
+    color: #007bff;
+    text-decoration: none;
+}
+
+/* Botão azul de "Entrar" */
+.btn-submit {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 700;
+    transition: 0.3s; /* Efeito suave no hover */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-submit:hover {
+    background-color: #0056b3;
+}
+
+/* Linha divisória fina com a palavra "ou" no meio */
+.divider {
+    position: relative;
+    margin: 1.5rem 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.divider-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 0 0.5rem;
+    color: #aaa;
+}
+
+.btn-google {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #fff;
+    color: #555;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    transition: 0.3s;
+}
+
+.btn-google:hover {
+    background-color: #f9f9f9;
+}
+
+.btn-google img {
+    width: 20px;
+    height: 20px;
+}
+.register-text {
+    margin-top: 1.5rem; /* Aumentei o espaço aqui */
+    text-align: center;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+.secure-text {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #aaa;
+}

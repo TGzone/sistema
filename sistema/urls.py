@@ -1,27 +1,31 @@
 from django.contrib import admin
 from django.urls import path, include
-from django.conf import settings # IMPORTANTE: Importa suas configurações
-from django.conf.urls.static import static # IMPORTANTE: Importa a função de arquivos estáticos
+from django.conf import settings
+from django.conf.urls.static import static
+from django.shortcuts import redirect 
 from . import views 
 
 urlpatterns = [
+    # 1. Rota Raiz: Manda pro login
+    path('', lambda request: redirect('usuarios:login'), name='root'),
+
+    # 2. Admin
     path('admin/', admin.site.urls),
     
-    # Página Inicial (Dashboard)
-    path('', views.dashboard, name='dashboard'),
+    # 3. Dashboard (Corrigi o erro de digitação de 'deshboard' para 'dashboard')
+    path('dashboard/', views.dashboard, name='dashboard'),
     
-    # MÓDULOS COM INCLUDE
+    # 4. MÓDULO DE USUÁRIOS (Faltava essa linha para o redirect acima funcionar!)
+    path('usuarios/', include('usuarios.urls', namespace='usuarios')),
+    
+    # 5. Outros Módulos
     path('pessoas/', include('pessoas.urls', namespace='pessoas')),
     path('igrejas/', include('igrejas.urls', namespace='igrejas')),
     path('cultos/', include('cultos.urls', namespace='cultos')),
-   # Única linha necessária para o financeiro:
     path('financeiro/', include('financeiro.urls', namespace='financeiro')),
-   
     path('pastoral/', views.pastoral, name='pastoral'),
 ]
 
-# ESTA PARTE FICA FORA DOS COLCHETES:
-# Ela diz ao Django: "Se estivermos em modo de desenvolvimento (DEBUG=True), 
-# sirva os arquivos da pasta MEDIA para o navegador poder ler."
+# Configuração de arquivos de mídia
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

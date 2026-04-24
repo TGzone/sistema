@@ -4,8 +4,8 @@
 {% block title %}Central de Obrigações | GeanGestão{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'assets/css/financeiro/contas.css' %}">
 <link rel="stylesheet" href="{% static 'assets/css/financeiro/movimentacoes.css' %}">
+<link rel="stylesheet" href="{% static 'assets/css/financeiro/contas.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -20,14 +20,20 @@
 </div>
 
 <div class="cg-main-layout">
-    
+
+    <!-- FORMULÁRIO -->
     <div class="cg-form-section">
         <div class="cg-card">
             <div class="cg-card-header">
                 <h2 class="cg-card-title" id="form-title">Agendar Nova Conta</h2>
             </div>
             <div class="cg-card-body">
-                <form action="{% url 'financeiro:contas' %}" method="POST" class="cg-form" id="cg-form-conta">
+
+                <div class="cg-pago-banner" id="pago-banner">
+                    <i class="ph ph-check-circle"></i> PAGO
+                </div>
+
+                <form action="{% url 'financeiro:contas' %}" method="POST" enctype="multipart/form-data" class="cg-form" id="cg-form-conta">
                     {% csrf_token %}
                     <input type="hidden" name="conta_id" id="conta_id">
 
@@ -36,7 +42,6 @@
                         <div class="cg-radio-group" style="grid-template-columns: 1fr 1fr;">
                             <input type="radio" class="cg-radio-input" name="tipo" id="tipo_saida" value="SAIDA" checked>
                             <label class="cg-radio-label cg-label-saida" for="tipo_saida"><i class="ph ph-trend-down me-1"></i> A Pagar</label>
-
                             <input type="radio" class="cg-radio-input" name="tipo" id="tipo_entrada" value="ENTRADA">
                             <label class="cg-radio-label cg-label-entrada" for="tipo_entrada"><i class="ph ph-trend-up me-1"></i> A Receber</label>
                         </div>
@@ -84,34 +89,83 @@
                         </div>
                     </div>
 
+                    <!-- Comprovante -->
+                    <div class="cg-form-group">
+                        <label class="cg-form-label">Comprovante (Opcional)</label>
+                        <div class="cg-upload-actions">
+                            <button type="button" class="cg-btn-camera" id="btn-camera">
+                                <i class="ph ph-camera"></i> Tirar Foto
+                            </button>
+                            <button type="button" class="cg-btn-gallery" id="btn-gallery">
+                                <i class="ph ph-image"></i> Enviar Arquivo
+                            </button>
+                        </div>
+                        <input type="file" name="comprovante" id="file-camera" accept="image/*" capture="environment" style="display:none;">
+                        <input type="file" name="comprovante_gallery" id="file-gallery" accept="image/*,application/pdf" style="display:none;">
+                        <div class="cg-upload-preview" id="upload-preview">
+                            <img id="preview-img" src="" alt="Comprovante">
+                            <button type="button" class="cg-remove-file" id="btn-remove-file" title="Remover">✕</button>
+                        </div>
+                        <div id="preview-pdf-name" style="display:none; margin-top:6px; font-size:0.82rem; color:#10b981;">
+                            <i class="ph ph-file-pdf"></i> <span id="pdf-filename"></span>
+                        </div>
+                    </div>
+
                     <div class="cg-form-actions">
                         <button type="submit" name="acao" value="salvar" class="cg-btn-primary cg-submit-btn" id="btn-salvar">
-                            <i class="ph ph-calendar-plus me-2"></i> Salvar na Agenda
+                            <i class="ph ph-calendar-plus"></i> Salvar
                         </button>
-                        
                         <button type="submit" name="acao" value="pagar" class="cg-btn-success cg-hidden" id="btn-pagar">
-                            <i class="ph ph-check-circle me-2"></i> Pagar
+                            <i class="ph ph-check-circle"></i> Pagar
                         </button>
                     </div>
                 </form>
+
+                <!-- Form de deletar separado — preenchido via JS -->
+                <form id="form-deletar" method="POST" action="#" style="display:none;">
+                    {% csrf_token %}
+                </form>
+
+                <!-- Botão apagar FORA do form principal -->
+                <button type="button" class="cg-btn-danger" id="btn-deletar">
+                    <i class="ph ph-trash"></i> Apagar Conta
+                </button>
+
             </div>
         </div>
     </div>
 
+    <!-- LISTA -->
     <div class="cg-activity-section">
         <div class="cg-card">
-            
             <div class="cg-card-header" style="flex-direction: column; align-items: stretch; gap: 15px;">
                 <div class="d-flex justify-content-between align-items-center">
                     <h2 class="cg-card-title">Agenda de Obrigações</h2>
-                    <div class="cg-total-badge cg-badge-danger">
-                        Vencidas: {{ contas_vencidas }}
-                    </div>
+                    <div class="cg-total-badge cg-badge-danger">Vencidas: {{ contas_vencidas }}</div>
                 </div>
-                
-                <div class="cg-search-bar">
-                    <i class="ph ph-magnifying-glass text-muted"></i>
-                    <input type="text" id="search-contas" class="cg-input" placeholder="Pesquisar contas, fornecedores...">
+
+                <div class="cg-filter-row">
+                    <select id="filter-mes" onchange="aplicarFiltros()">
+                        <option value="">Todos os meses</option>
+                        <option value="01">Janeiro</option>
+                        <option value="02">Fevereiro</option>
+                        <option value="03">Março</option>
+                        <option value="04">Abril</option>
+                        <option value="05">Maio</option>
+                        <option value="06">Junho</option>
+                        <option value="07">Julho</option>
+                        <option value="08">Agosto</option>
+                        <option value="09">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                    <select id="filter-status" onchange="aplicarFiltros()">
+                        <option value="">Todos</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="atrasado">Atrasado</option>
+                        <option value="pago">Pago</option>
+                    </select>
                 </div>
 
                 <div class="cg-kpi-grid">
@@ -129,23 +183,23 @@
             <div class="cg-card-body">
                 <div class="cg-activity-list" id="lista-contas">
                     {% for conta in contas %}
-                    <div class="cg-activity-item" style="cursor: pointer;" onclick="preencherFormulario('{{ conta.id }}', '{{ conta.nome|escapejs }}', '{{ conta.empresa|escapejs }}', '{{ conta.valor }}', '{{ conta.vencimento|date:'Y-m-d' }}', '{{ conta.categoria }}', '{{ conta.recorrencia }}', '{{ conta.tipo }}', '{{ conta.status }}')">
+                    <div class="cg-activity-item {% if conta.status == 'pago' %}is-pago{% endif %}"
+                         data-vencimento="{{ conta.vencimento|date:'Y-m-d' }}"
+                         data-status="{{ conta.status }}"
+                         onclick="preencherFormulario('{{ conta.id }}', '{{ conta.nome|escapejs }}', '{{ conta.empresa|escapejs }}', '{{ conta.valor }}', '{{ conta.vencimento|date:'Y-m-d' }}', '{{ conta.categoria }}', '{{ conta.recorrencia }}', '{{ conta.tipo }}', '{{ conta.status }}')">
                         <div class="cg-activity-info">
                             <div class="cg-activity-name">{{ conta.nome }}</div>
-                            <div class="cg-activity-meta">{{ conta.empresa|default:"Sem fornecedor" }} • {{ conta.categoria }}</div>
+                            <div class="cg-activity-meta">{{ conta.empresa|default:"Sem fornecedor" }} • {{ conta.categoria }} • {{ conta.vencimento|date:"d/m/Y" }}</div>
                         </div>
-                        
                         <div class="cg-activity-origin">
                             {% if conta.recorrencia == 'mensal' %}<i class="ph ph-arrows-clockwise" title="Recorrente"></i>
                             {% else %}<i class="ph ph-push-pin" title="Única"></i>{% endif %}
                         </div>
-
                         <div class="cg-activity-status">
-                            {% if conta.status == 'pago' %}<span class="cg-status-dot cg-status-synced" title="Pago/Recebido"></span>
-                            {% elif conta.status == 'atrasado' %}<span class="cg-status-dot" style="background-color: #ef4444;" title="Atrasado"></span>
+                            {% if conta.status == 'pago' %}<span class="cg-status-dot cg-status-synced" title="Pago"></span>
+                            {% elif conta.status == 'atrasado' %}<span class="cg-status-dot" style="background-color:#ef4444;" title="Atrasado"></span>
                             {% else %}<span class="cg-status-dot cg-status-pending" title="Pendente"></span>{% endif %}
                         </div>
-
                         <div class="cg-activity-value {% if conta.tipo == 'ENTRADA' %}text-success{% else %}text-danger{% endif %}">
                             R$ {{ conta.valor|floatformat:2 }}
                         </div>
@@ -154,6 +208,8 @@
                     <div class="text-center p-4 text-muted small">Nenhuma conta agendada.</div>
                     {% endfor %}
                 </div>
+
+                <div class="cg-pagination" id="paginacao"></div>
             </div>
         </div>
     </div>

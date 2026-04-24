@@ -1,0 +1,143 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/usuarios/lista_solicitacoes.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="cg-access-wrapper">
+    
+    <header class="cg-access-header">
+        <div class="cg-header-info">
+            <h1>Gestão de Acessos</h1>
+            <p>Analise, aprove ou revogue permissões de entrada no sistema.</p>
+        </div>
+        <div class="cg-header-stats">
+            <div class="cg-stat-card">
+                <span class="label">Pendentes</span>
+                <span class="value warning">{{ solicitacoes_pendentes|length|default:"0" }}</span>
+            </div>
+            <div class="cg-stat-card">
+                <span class="label">Ativos</span>
+                <span class="value success">{{ usuarios_ativos|length|default:"0" }}</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="cg-access-layout">
+        
+        <aside class="cg-access-sidebar">
+            <div class="cg-filter-bar">
+                <button class="cg-filter-btn active" data-tab="pendentes">Pendentes</button>
+                <button class="cg-filter-btn" data-tab="ativos">Ativos</button>
+                <button class="cg-filter-btn" data-tab="inativos">Inativos</button>
+            </div>
+
+            <div class="cg-search-box">
+                <i class="ph ph-magnifying-glass"></i>
+                <input type="text" placeholder="Buscar solicitação...">
+            </div>
+
+            <div class="cg-request-list">
+                <div class="cg-request-card active" onclick="analisarSolicitacao('1')">
+                    <div class="cg-card-icon pending">
+                        <i class="ph ph-user-plus"></i>
+                    </div>
+                    <div class="cg-card-info">
+                        <h3>Tiago Aldemino</h3>
+                        <p>Solicitou: <strong>Tesoureiro</strong></p>
+                        <span class="cg-church-tag">Sede - Matriz</span>
+                    </div>
+                    <div class="cg-card-meta">
+                        <span class="time">há 2h</span>
+                        <i class="ph ph-caret-right"></i>
+                    </div>
+                </div>
+
+                <div class="cg-request-card approved">
+                    <div class="cg-card-icon success">
+                        <i class="ph ph-check-circle"></i>
+                    </div>
+                    <div class="cg-card-info">
+                        <h3>Gean Oliveira</h3>
+                        <p>Acesso: <strong>Administrador</strong></p>
+                        <span class="cg-church-tag">Sede - Matriz</span>
+                    </div>
+                    <div class="cg-card-meta">
+                        <span class="status-label">ATIVO</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="cg-access-analysis" id="analysisPanel">
+            <div class="cg-analysis-header">
+                <div class="cg-user-avatar">TA</div>
+                <div class="cg-user-titles">
+                    <h2>Tiago Aldemino</h2>
+                    <p><i class="ph ph-envelope"></i> tiago@exemplo.com</p>
+                </div>
+                <div class="cg-analysis-badge warning">Pendente de Aprovação</div>
+            </div>
+
+            <section class="cg-analysis-section">
+                <div class="cg-section-title"><i class="ph ph-info"></i> Dados da Solicitação</div>
+                <div class="cg-info-grid">
+                    <div class="cg-info-item">
+                        <label>WhatsApp</label>
+                        <span>(11) 99999-8888</span>
+                    </div>
+                    <div class="cg-info-item">
+                        <label>Igreja Destino</label>
+                        <span>Congregação Esperança</span>
+                    </div>
+                    <div class="cg-info-item">
+                        <label>Perfil Solicitado</label>
+                        <span class="cg-role-pill">Tesoureiro de Unidade</span>
+                    </div>
+                    <div class="cg-info-item">
+                        <label>Data do Pedido</label>
+                        <span>24/04/2026 às 14:30</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cg-analysis-section cg-link-section">
+                <div class="cg-section-title"><i class="ph ph-link"></i> Vincular ao Cadastro de Membro</div>
+                <p class="cg-help-text">Para liberar o acesso, este usuário deve estar lincado a uma pessoa cadastrada no sistema.</p>
+                
+                <div class="cg-link-box">
+                    <div class="cg-search-member">
+                        <input type="text" list="membersList" placeholder="Pesquisar nome do membro no banco...">
+                        <datalist id="membersList">
+                            <option value="Tiago Aldemino - CPF: 123.***.***-00"></option>
+                            <option value="Tiago Silva - CPF: 456.***.***-11"></option>
+                        </datalist>
+                        <button class="btn-search-link"><i class="ph ph-magnifying-glass"></i></button>
+                    </div>
+                    
+                    <div class="cg-member-preview">
+                        <i class="ph ph-identification-card"></i>
+                        <div>
+                            <strong>Tiago Aldemino</strong>
+                            <span>Membro desde 2022 | Unidade: Sede</span>
+                        </div>
+                        <span class="match-tag">Confirmado</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="cg-analysis-actions">
+                <button class="cg-btn-deny">
+                    <i class="ph ph-x-circle"></i> Negar Solicitação
+                </button>
+                <button class="cg-btn-approve">
+                    <i class="ph ph-check-circle"></i> Autorizar Cadastro
+                </button>
+            </div>
+        </main>
+
+    </div>
+</div>
+{% endblock %}

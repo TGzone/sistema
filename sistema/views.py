@@ -30,3 +30,6 @@ def cultos(request):
 # --- MÓDULO FINANCEIRO (SUBMENUS) ---
 def financeiro(request):
     return render(request, "financeiro/financeiro.html")
+
+def usuarios (request):
+    return render(request, "usuarios/usuarios.html")

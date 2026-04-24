@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Seus apps do projeto Sistema PDB
+    'usuarios',
     'pessoas',
     'financeiro',
     'igrejas',
@@ -103,8 +104,9 @@ STATICFILES_DIRS = [
 ]
 
 # 10. MEDIA (UPLOADS DE ARQUIVOS)
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Tipo padrão de ID para o banco
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

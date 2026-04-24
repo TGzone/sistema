@@ -96,6 +96,20 @@
                         <a href="#" class="submenu-link">Relatórios</a>
                     </div>
                 </div>
+               
+                 <div class="nav-item has-submenu">
+                    <button class="submenu-btn">
+                        <i class="ph ph-cross"></i>
+                        <span>Usuarios</span>
+                        <i class="ph ph-caret-down arrow-icon"></i>
+                    </button>
+                    <div class="submenu">
+                        <a href="{% url 'usuarios:cadastro_usuarios_sistema' %}" class="submenu-link">Cadastrar um Usuarios</a>
+                        <a href="{% url 'usuarios:lista_solicitacoes' %}" class="submenu-link">Lista de Solicitações</a>
+                    </div>
+                </div>
+            
+            
             </nav>
             
             <div class="sidebar-footer">

@@ -47,7 +47,10 @@ class Obrigacao(models.Model):
     recorrencia = models.CharField(max_length=20, choices=RECORRENCIA_CHOICES, default='mensal')
     observacao = models.TextField(blank=True, null=True)
     tipo = models.CharField(max_length=10, choices=[('ENTRADA', 'Entrada'), ('SAIDA', 'Saída')], default='SAIDA') # Define se é A Pagar (SAIDA) ou A Receber (ENTRADA)
-
+    comprovante = models.FileField(upload_to='comprovantes/', blank=True, null=True) # Campo para upload de comprovante de pagamento
+ 
+ 
+ 
     def __str__(self):
         return f"{self.nome} - {self.get_status_display()}"
 
@@ -65,3 +68,13 @@ class DadosBancarios(models.Model):
     agencia = models.CharField(max_length=20)
     conta = models.CharField(max_length=50)
     chave_pix = models.CharField(max_length=255)
+
+class Conta(models.Model):
+    nome = models.CharField(max_length=255)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    vencimento = models.DateField()
+    
+    # ✅ Adiciona isso:
+    comprovante = models.FileField(upload_to='comprovantes/', blank=True, null=True)
+    
+    # ... resto dos campos ...

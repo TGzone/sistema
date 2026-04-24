@@ -1,0 +1,111 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Central de Obrigações | GeanGestão{% endblock %}
+
+{% block extra_css %}
+ <link rel="stylesheet" href="{% static 'assets/css/usuarios/cadastro_usuarios.css' %}">
+{% endblock %}
+
+{% block content %}
+   
+</head>
+<body class="cg-auth-body">
+
+    <div class="cg-auth-layout">
+        <div class="cg-auth-card">
+            
+            <header class="cg-auth-header">
+                <div class="cg-logo-placeholder">
+                    <i class="ph ph-shield-check"></i>
+                </div>
+                <h1>Solicitar Acesso</h1>
+                <p>Preencha seus dados para solicitar acesso ao GeanGestão. Sua conta será analisada por um administrador.</p>
+            </header>
+
+            <form method="POST" class="cg-auth-form">
+                {% csrf_token %}
+                
+                <section class="cg-form-section">
+                    <div class="cg-section-title">
+                        <i class="ph ph-user"></i> Dados Pessoais
+                    </div>
+                    
+                    <div class="cg-input-group full-width">
+                        <label>Nome Completo *</label>
+                        <input type="text" name="nome" placeholder="Ex: Tiago Aldemino" required>
+                    </div>
+
+                    <div class="cg-form-row">
+                        <div class="cg-input-group">
+                            <label>E-mail *</label>
+                            <input type="email" name="email" placeholder="seu@email.com" required>
+                        </div>
+                        <div class="cg-input-group">
+                            <label>WhatsApp *</label>
+                            <input type="text" name="telefone" id="phoneMask" placeholder="(00) 00000-0000" required>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="cg-form-section">
+                    <div class="cg-section-title">
+                        <i class="ph ph-buildings"></i> Vínculo Ministerial
+                    </div>
+                    
+                    <div class="cg-input-group full-width">
+                        <label>Unidade / Igreja Pertencente *</label>
+                        <select name="igreja_id" required>
+                            <option value="">Selecione sua Igreja</option>
+                            {% for igreja in igrejas %}
+                                <option value="{{ igreja.id }}">{{ igreja.nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="cg-input-group full-width">
+                        <label>Perfil de Acesso Solicitado *</label>
+                        <select name="perfil_solicitado" required>
+                            <option value="">Selecione a função...</option>
+                            <option value="tesoureiro">Tesoureiro (Finanças da Unidade)</option>
+                            <option value="pastor_unidade">Pastor da Unidade</option>
+                            <option value="lider_departamento">Líder de Departamento (Cultos/Eventos)</option>
+                            <option value="midia">Mídia (Cultos Locais)</option>
+                            <option value="administrador">Administrador (Acesso Completo)</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="cg-form-section">
+                    <div class="cg-section-title">
+                        <i class="ph ph-lock-key"></i> Credenciais de Acesso
+                    </div>
+                    
+                    <div class="cg-form-row">
+                        <div class="cg-input-group">
+                            <label>Crie uma Senha *</label>
+                            <input type="password" name="senha" placeholder="••••••••" required>
+                        </div>
+                        <div class="cg-input-group">
+                            <label>Confirme a Senha *</label>
+                            <input type="password" name="confirmar_senha" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="cg-form-actions">
+                    <button type="submit" class="cg-btn-submit">
+                        Enviar Solicitação <i class="ph ph-paper-plane-right"></i>
+                    </button>
+                </div>
+
+                <div class="cg-auth-footer">
+                    <p>Já possui uma conta aprovada? <a href="{% url 'usuarios:login' %}">Faça login aqui</a></p>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</body>
+{% endblock  %}

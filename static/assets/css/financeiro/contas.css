@@ -1,98 +1,235 @@
-/* Importando a base do CSS de movimentações caso queira separar 100% depois */
-@import url('movimentacoes.css');
-
 /* =========================================================
-   contas.css - Ajustes Específicos para a Central de Obrigações
+   contas.css — Central de Obrigações
+   Caminho: static/assets/css/financeiro/contas.css
 ========================================================= */
 
-/* Ocultador Universal */
-.cg-hidden {
-    display: none !important;
-}
+.cg-hidden { display: none !important; }
 
-/* Painel de Ações do Formulário (Para colocar botões lado a lado) */
+/* ===== Ações do formulário ===== */
 .cg-form-actions {
     display: flex;
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
     margin-top: 24px;
 }
+.cg-form-actions .cg-btn-primary,
+.cg-form-actions .cg-btn-success { flex: 1; }
 
-.cg-form-actions button {
-    flex: 1; /* Os botões dividem o espaço por igual */
-}
-
-/* Botão de Sucesso (Marcar como Pago) */
+/* ===== Botão Sucesso (Pagar) ===== */
 .cg-btn-success {
     background-color: #10b981;
-    color: #ffffff;
+    color: #fff;
     border: none;
     border-radius: 8px;
     padding: 12px 20px;
-    font-family: 'Inter', sans-serif;
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: background-color 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
 }
+.cg-btn-success:hover { background-color: #059669; }
 
-.cg-btn-success:hover {
-    background-color: #059669;
-}
-
-/* Barra de Pesquisa acima da lista */
-.cg-search-bar {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.cg-search-bar i {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.2rem;
-}
-
-.cg-search-bar input {
-    padding-left: 40px; /* Espaço pro ícone da lupa */
+/* ===== Botão Apagar ===== */
+.cg-btn-danger {
+    display: none; /* escondido até selecionar uma conta */
     width: 100%;
+    margin-top: 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1.5px solid #ef4444;
+    background: transparent;
+    color: #ef4444;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s, color .2s;
 }
+.cg-btn-danger:hover { background: #ef4444; color: #fff; }
 
-/* KPIs de Resumo Rápidos */
-.cg-kpi-grid {
+/* ===== Botões comprovante ===== */
+.cg-upload-actions {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-top: 6px;
+}
+.cg-btn-camera,
+.cg-btn-gallery {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1.5px dashed rgba(100,116,139,0.5);
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: border-color .2s, color .2s, background .2s;
+}
+.cg-btn-camera:hover  { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.06); }
+.cg-btn-gallery:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.06); }
+
+/* ===== Preview comprovante ===== */
+.cg-upload-preview {
+    display: none;
+    margin-top: 8px;
+    position: relative;
+}
+.cg-upload-preview img {
+    max-width: 100%;
+    max-height: 160px;
+    border-radius: 8px;
+    border: 2px solid #10b981;
+    object-fit: cover;
+}
+.cg-remove-file {
+    position: absolute;
+    top: 4px; right: 4px;
+    background: #ef4444;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
 }
 
+/* ===== Banner PAGO ===== */
+.cg-pago-banner {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    background: #10b981;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: 0.06em;
+    padding: 18px 24px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    box-shadow: 0 4px 20px rgba(16,185,129,0.35);
+    animation: pago-pop 0.3s ease;
+}
+.cg-pago-banner.visible { display: flex; }
+.cg-pago-banner i { font-size: 1.8rem; }
+@keyframes pago-pop {
+    from { transform: scale(0.92); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+}
+
+/* ===== Item PAGO na lista ===== */
+.cg-activity-item { cursor: pointer; }
+.cg-activity-item.is-pago {
+    background: linear-gradient(90deg, rgba(16,185,129,0.18) 0%, rgba(16,185,129,0.06) 100%);
+    border-left: 4px solid #10b981;
+    position: relative;
+}
+.cg-activity-item.is-pago::after {
+    content: "PAGO";
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    background: #10b981;
+    color: #fff;
+    font-weight: 800;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+.cg-activity-item.is-pago .cg-activity-value,
+.cg-activity-item.is-pago .cg-activity-name {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+/* ===== KPIs ===== */
+.cg-kpi-grid { display: flex; gap: 10px; }
 .cg-kpi-card {
     flex: 1;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 8px;
     padding: 12px;
     text-align: center;
 }
-
 .cg-kpi-value {
     font-family: 'JetBrains Mono', monospace;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
 }
-
 .cg-kpi-label {
     font-size: 0.7rem;
-    color: #64748b;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
-/* Rótulos coloridos dos Radio Buttons de Entrada/Saída */
-.cg-label-saida { border-color: #ef4444; color: #ef4444; }
+/* ===== Radio Entrada/Saída ===== */
+.cg-label-saida  { border-color: #ef4444; color: #ef4444; }
 .cg-label-entrada { border-color: #10b981; color: #10b981; }
-.cg-radio-input:checked + .cg-label-saida { background: #fef2f2; }
-.cg-radio-input:checked + .cg-label-entrada { background: #ecfdf5; }
+.cg-radio-input:checked + .cg-label-saida   { background: rgba(239,68,68,0.1); }
+.cg-radio-input:checked + .cg-label-entrada { background: rgba(16,185,129,0.1); }
+
+/* ===== Filtros ===== */
+.cg-filter-row { display: flex; gap: 8px; margin-bottom: 4px; }
+.cg-filter-row select {
+    flex: 1;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+}
+.cg-filter-row select:focus {
+    border-color: #3b82f6;
+}
+
+/* ===== Paginação ===== */
+.cg-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 0 4px;
+}
+.cg-page-btn {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    color: #e2e8f0;
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+}
+.cg-page-btn:hover:not(:disabled) { border-color: #3b82f6; color: #3b82f6; }
+.cg-page-btn:disabled { opacity: 0.3; cursor: default; }
+.cg-page-info { font-size: 0.8rem; color: #94a3b8; padding: 0 4px; }
+
+/* ===== Barra de pesquisa ===== */
+.cg-search-bar { position: relative; margin-bottom: 12px; }
+.cg-search-bar i {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    color: #94a3b8;
+}
+.cg-search-bar input { padding-left: 40px; width: 100%; }
