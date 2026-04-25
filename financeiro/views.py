@@ -3,6 +3,12 @@ from django.db.models import Sum
 from django.utils import timezone
 from .models import Movimentacao, Obrigacao, Manutencao, DadosBancarios
 from igrejas.models import Igreja
+from django.contrib.auth.decorators import login_required
+from usuarios.permissoes import perfil_requerido, PERFIS_MASTER, PERFIS_GERENCIAIS, PERFIS_FINANCEIROS, PERFIS_OPERACIONAIS
+from django.views.decorators.cache import never_cache
+
+
+
 
 # =========================================================
 # HELPER: saldo por categoria de gaveta
@@ -15,6 +21,9 @@ def _saldo_gaveta(igreja, categoria):
 # =========================================================
 # 0. DASHBOARD FINANCEIRO PRINCIPAL
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
+@never_cache
 def financeiro(request):
     return render(request, "financeiro/financeiro.html")
 

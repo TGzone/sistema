@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="cg-access-wrapper">
-    
+
     <header class="cg-access-header">
         <div class="cg-header-info">
             <h1>Gestão de Acessos</h1>
@@ -16,17 +16,26 @@
         <div class="cg-header-stats">
             <div class="cg-stat-card">
                 <span class="label">Pendentes</span>
-                <span class="value warning">{{ solicitacoes_pendentes|length|default:"0" }}</span>
+                <span class="value warning">{{ solicitacoes_pendentes|length }}</span>
             </div>
             <div class="cg-stat-card">
                 <span class="label">Ativos</span>
-                <span class="value success">{{ usuarios_ativos|length|default:"0" }}</span>
+                <span class="value success">{{ usuarios_ativos|length }}</span>
             </div>
         </div>
     </header>
 
+    {% if messages %}
+    <div class="cg-messages">
+        {% for msg in messages %}
+        <div class="cg-alert cg-alert-{{ msg.tags }}">{{ msg }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="cg-access-layout">
-        
+
+        <!-- SIDEBAR: Lista de usuários -->
         <aside class="cg-access-sidebar">
             <div class="cg-filter-bar">
                 <button class="cg-filter-btn active" data-tab="pendentes">Pendentes</button>
@@ -36,108 +45,299 @@
 
             <div class="cg-search-box">
                 <i class="ph ph-magnifying-glass"></i>
-                <input type="text" placeholder="Buscar solicitação...">
+                <input type="text" id="searchUsuario" placeholder="Buscar usuário...">
             </div>
 
-            <div class="cg-request-list">
-                <div class="cg-request-card active" onclick="analisarSolicitacao('1')">
+            <!-- PENDENTES -->
+            <div class="cg-request-list" id="tab-pendentes">
+                {% for u in solicitacoes_pendentes %}
+                <div class="cg-request-card {% if forloop.first %}active{% endif %}"
+                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'pendente')"
+                     data-nome="{{ u.nome|lower }}">
                     <div class="cg-card-icon pending">
                         <i class="ph ph-user-plus"></i>
                     </div>
                     <div class="cg-card-info">
-                        <h3>Tiago Aldemino</h3>
-                        <p>Solicitou: <strong>Tesoureiro</strong></p>
-                        <span class="cg-church-tag">Sede - Matriz</span>
+                        <h3>{{ u.nome }}</h3>
+                        <p>Solicitou: <strong>{{ u.get_perfil_display }}</strong></p>
+                        <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
                     </div>
                     <div class="cg-card-meta">
-                        <span class="time">há 2h</span>
+                        <span class="time">{{ u.criado_em|timesince }} atrás</span>
                         <i class="ph ph-caret-right"></i>
                     </div>
                 </div>
+                {% empty %}
+                <div class="cg-empty-list">
+                    <i class="ph ph-check-circle"></i>
+                    <p>Nenhuma solicitação pendente.</p>
+                </div>
+                {% endfor %}
+            </div>
 
-                <div class="cg-request-card approved">
+            <!-- ATIVOS -->
+            <div class="cg-request-list" id="tab-ativos" style="display:none;">
+                {% for u in usuarios_ativos %}
+                <div class="cg-request-card approved"
+                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'ativo')"
+                     data-nome="{{ u.nome|lower }}">
                     <div class="cg-card-icon success">
                         <i class="ph ph-check-circle"></i>
                     </div>
                     <div class="cg-card-info">
-                        <h3>Gean Oliveira</h3>
-                        <p>Acesso: <strong>Administrador</strong></p>
-                        <span class="cg-church-tag">Sede - Matriz</span>
+                        <h3>{{ u.nome }}</h3>
+                        <p>Acesso: <strong>{{ u.get_perfil_display }}</strong></p>
+                        <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
                     </div>
                     <div class="cg-card-meta">
                         <span class="status-label">ATIVO</span>
                     </div>
                 </div>
+                {% empty %}
+                <div class="cg-empty-list"><p>Nenhum usuário ativo.</p></div>
+                {% endfor %}
+            </div>
+
+            <!-- INATIVOS -->
+            <div class="cg-request-list" id="tab-inativos" style="display:none;">
+                {% for u in usuarios_inativos %}
+                <div class="cg-request-card"
+                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'inativo')"
+                     data-nome="{{ u.nome|lower }}">
+                    <div class="cg-card-icon" style="background:#fee2e2;">
+                        <i class="ph ph-x-circle" style="color:#ef4444;"></i>
+                    </div>
+                    <div class="cg-card-info">
+                        <h3>{{ u.nome }}</h3>
+                        <p>{{ u.get_perfil_display }}</p>
+                        <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
+                    </div>
+                    <div class="cg-card-meta">
+                        <span class="status-label" style="color:#ef4444;">{{ u.get_status_display|upper }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="cg-empty-list"><p>Nenhum usuário inativo.</p></div>
+                {% endfor %}
             </div>
         </aside>
 
+        <!-- PAINEL DE ANÁLISE -->
         <main class="cg-access-analysis" id="analysisPanel">
-            <div class="cg-analysis-header">
-                <div class="cg-user-avatar">TA</div>
-                <div class="cg-user-titles">
-                    <h2>Tiago Aldemino</h2>
-                    <p><i class="ph ph-envelope"></i> tiago@exemplo.com</p>
-                </div>
-                <div class="cg-analysis-badge warning">Pendente de Aprovação</div>
+
+            <!-- Estado vazio -->
+            <div id="emptyPanel" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:#94a3b8;">
+                <i class="ph ph-cursor-click" style="font-size:48px;"></i>
+                <p>Selecione um usuário ao lado para analisar.</p>
             </div>
 
-            <section class="cg-analysis-section">
-                <div class="cg-section-title"><i class="ph ph-info"></i> Dados da Solicitação</div>
-                <div class="cg-info-grid">
-                    <div class="cg-info-item">
-                        <label>WhatsApp</label>
-                        <span>(11) 99999-8888</span>
+            <!-- Painel preenchido via JS -->
+            <div id="activePanel" style="display:none;">
+                <div class="cg-analysis-header">
+                    <div class="cg-user-avatar" id="panelAvatar">--</div>
+                    <div class="cg-user-titles">
+                        <h2 id="panelNome"></h2>
+                        <p><i class="ph ph-envelope"></i> <span id="panelEmail"></span></p>
+                        <p><i class="ph ph-whatsapp-logo" style="color:#25D366;"></i> <span id="panelTelefone"></span></p>
                     </div>
-                    <div class="cg-info-item">
-                        <label>Igreja Destino</label>
-                        <span>Congregação Esperança</span>
-                    </div>
-                    <div class="cg-info-item">
-                        <label>Perfil Solicitado</label>
-                        <span class="cg-role-pill">Tesoureiro de Unidade</span>
-                    </div>
-                    <div class="cg-info-item">
-                        <label>Data do Pedido</label>
-                        <span>24/04/2026 às 14:30</span>
-                    </div>
+                    <div class="cg-analysis-badge" id="panelBadge"></div>
                 </div>
-            </section>
 
-            <section class="cg-analysis-section cg-link-section">
-                <div class="cg-section-title"><i class="ph ph-link"></i> Vincular ao Cadastro de Membro</div>
-                <p class="cg-help-text">Para liberar o acesso, este usuário deve estar lincado a uma pessoa cadastrada no sistema.</p>
-                
-                <div class="cg-link-box">
-                    <div class="cg-search-member">
-                        <input type="text" list="membersList" placeholder="Pesquisar nome do membro no banco...">
-                        <datalist id="membersList">
-                            <option value="Tiago Aldemino - CPF: 123.***.***-00"></option>
-                            <option value="Tiago Silva - CPF: 456.***.***-11"></option>
-                        </datalist>
-                        <button class="btn-search-link"><i class="ph ph-magnifying-glass"></i></button>
-                    </div>
-                    
-                    <div class="cg-member-preview">
-                        <i class="ph ph-identification-card"></i>
-                        <div>
-                            <strong>Tiago Aldemino</strong>
-                            <span>Membro desde 2022 | Unidade: Sede</span>
+                <section class="cg-analysis-section">
+                    <div class="cg-section-title"><i class="ph ph-info"></i> Dados da Solicitação</div>
+                    <div class="cg-info-grid">
+                        <div class="cg-info-item">
+                            <label>Igreja</label>
+                            <span id="panelIgreja"></span>
                         </div>
-                        <span class="match-tag">Confirmado</span>
+                        <div class="cg-info-item">
+                            <label>Perfil Solicitado</label>
+                            <span class="cg-role-pill" id="panelPerfil"></span>
+                        </div>
+                        <div class="cg-info-item">
+                            <label>Data do Pedido</label>
+                            <span id="panelData"></span>
+                        </div>
+                        <div class="cg-info-item">
+                            <label>Pessoa Vinculada</label>
+                            <span id="panelPessoa">Não vinculado</span>
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <div class="cg-analysis-actions">
-                <button class="cg-btn-deny">
-                    <i class="ph ph-x-circle"></i> Negar Solicitação
-                </button>
-                <button class="cg-btn-approve">
-                    <i class="ph ph-check-circle"></i> Autorizar Cadastro
-                </button>
+                <!-- Vincular membro (apenas pendentes) -->
+                <section class="cg-analysis-section cg-link-section" id="sectionVincular">
+                    <div class="cg-section-title"><i class="ph ph-link"></i> Vincular ao Cadastro de Membro</div>
+                    <p class="cg-help-text">Opcional, mas recomendado. Vincula o login a uma pessoa já cadastrada.</p>
+                    <div class="cg-link-box">
+                        <div class="cg-search-member">
+                            <input type="text" id="searchPessoa" placeholder="Digite o nome do membro...">
+                            <button type="button" class="btn-search-link" onclick="buscarPessoa()">
+                                <i class="ph ph-magnifying-glass"></i>
+                            </button>
+                        </div>
+                        <div id="resultadoPessoa" style="margin-top:10px;"></div>
+                    </div>
+                </section>
+
+                <!-- Ações -->
+                <div class="cg-analysis-actions" id="panelAcoes">
+                    <!-- Preenchido via JS conforme o status -->
+                </div>
             </div>
         </main>
-
     </div>
 </div>
+
+<!-- Forms ocultos para POST -->
+<form id="formAprovar" method="POST" style="display:none;">{% csrf_token %}<input type="hidden" name="pessoa_id" id="pessoaVinculadaId"></form>
+<form id="formNegar"   method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formRevogar" method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formReativar"method="POST" style="display:none;">{% csrf_token %}</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const URL_BASE_APROVAR  = "{% url 'usuarios:aprovar'  pk=0 %}".replace('/0/', '/');
+const URL_BASE_NEGAR    = "{% url 'usuarios:negar'    pk=0 %}".replace('/0/', '/');
+const URL_BASE_REVOGAR  = "{% url 'usuarios:revogar'  pk=0 %}".replace('/0/', '/');
+const URL_BASE_REATIVAR = "{% url 'usuarios:reativar' pk=0 %}".replace('/0/', '/');
+const URL_BUSCA_PESSOA  = "{% url 'usuarios:api_buscar_pessoa' %}";
+
+let usuarioAtualId   = null;
+let pessoaVinculadaId = null;
+
+// ── Tabs ──────────────────────────────────────
+document.querySelectorAll('.cg-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        document.querySelectorAll('.cg-filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        ['pendentes', 'ativos', 'inativos'].forEach(tab => {
+            document.getElementById(`tab-${tab}`).style.display = 'none';
+        });
+        document.getElementById(`tab-${this.dataset.tab}`).style.display = 'block';
+    });
+});
+
+// ── Busca na sidebar ──────────────────────────
+document.getElementById('searchUsuario').addEventListener('input', function () {
+    const termo = this.value.toLowerCase();
+    document.querySelectorAll('.cg-request-card').forEach(card => {
+        const nome = card.dataset.nome || '';
+        card.style.display = nome.includes(termo) ? '' : 'none';
+    });
+});
+
+// ── Selecionar usuário ────────────────────────
+function selecionarUsuario(id, nome, email, telefone, perfil, status, igreja, data, pessoa, statusRaw) {
+    usuarioAtualId = id;
+    pessoaVinculadaId = null;
+
+    document.getElementById('emptyPanel').style.display  = 'none';
+    document.getElementById('activePanel').style.display = 'block';
+
+    const iniciais = nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
+    document.getElementById('panelAvatar').textContent    = iniciais;
+    document.getElementById('panelNome').textContent      = nome;
+    document.getElementById('panelEmail').textContent     = email;
+    document.getElementById('panelTelefone').textContent  = telefone || 'Não informado';
+    document.getElementById('panelIgreja').textContent    = igreja;
+    document.getElementById('panelPerfil').textContent    = perfil;
+    document.getElementById('panelData').textContent      = data;
+    document.getElementById('panelPessoa').textContent    = pessoa || 'Não vinculado';
+
+    const badge = document.getElementById('panelBadge');
+    const cores  = { pendente: 'warning', ativo: 'success', inativo: 'danger', negado: 'danger' };
+    badge.className = `cg-analysis-badge ${cores[statusRaw] || 'warning'}`;
+    badge.textContent = status;
+
+    // Seção vincular: só para pendentes
+    document.getElementById('sectionVincular').style.display = statusRaw === 'pendente' ? '' : 'none';
+
+    // Botões de ação
+    const acoes = document.getElementById('panelAcoes');
+    acoes.innerHTML = '';
+
+    if (statusRaw === 'pendente') {
+        acoes.innerHTML = `
+            <button class="cg-btn-deny"    onclick="executarAcao('negar')"><i class="ph ph-x-circle"></i> Negar</button>
+            <button class="cg-btn-approve" onclick="executarAcao('aprovar')"><i class="ph ph-check-circle"></i> Aprovar</button>
+        `;
+    } else if (statusRaw === 'ativo') {
+        acoes.innerHTML = `
+            <button class="cg-btn-deny" onclick="executarAcao('revogar')"><i class="ph ph-lock-key"></i> Revogar Acesso</button>
+        `;
+    } else {
+        acoes.innerHTML = `
+            <button class="cg-btn-approve" onclick="executarAcao('reativar')"><i class="ph ph-arrow-clockwise"></i> Reativar</button>
+        `;
+    }
+
+    // Destacar card selecionado
+    document.querySelectorAll('.cg-request-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+}
+
+// ── Ações via form POST ───────────────────────
+function executarAcao(acao) {
+    if (!usuarioAtualId) return;
+
+    const forms = {
+        aprovar:  { form: 'formAprovar',  url: URL_BASE_APROVAR },
+        negar:    { form: 'formNegar',    url: URL_BASE_NEGAR },
+        revogar:  { form: 'formRevogar',  url: URL_BASE_REVOGAR },
+        reativar: { form: 'formReativar', url: URL_BASE_REATIVAR },
+    };
+
+    const { form, url } = forms[acao];
+    const el = document.getElementById(form);
+    el.action = url + usuarioAtualId + '/';
+
+    if (acao === 'aprovar' && pessoaVinculadaId) {
+        document.getElementById('pessoaVinculadaId').value = pessoaVinculadaId;
+    }
+
+    el.submit();
+}
+
+// ── Busca de pessoa para vincular ─────────────
+function buscarPessoa() {
+    const termo = document.getElementById('searchPessoa').value.trim();
+    if (termo.length < 2) return;
+
+    fetch(`${URL_BUSCA_PESSOA}?q=${encodeURIComponent(termo)}`)
+        .then(r => r.json())
+        .then(data => {
+            const div = document.getElementById('resultadoPessoa');
+            if (!data.length) {
+                div.innerHTML = '<p style="color:#94a3b8; font-size:13px;">Nenhuma pessoa encontrada.</p>';
+                return;
+            }
+            div.innerHTML = data.map(p => `
+                <div class="cg-member-preview" onclick="vincularPessoa('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">
+                    <i class="ph ph-identification-card"></i>
+                    <div><strong>${p.nome}</strong><span>${p.tipo}</span></div>
+                    <span class="match-tag">Selecionar</span>
+                </div>
+            `).join('');
+        });
+}
+
+function vincularPessoa(id, nome) {
+    pessoaVinculadaId = id;
+    document.getElementById('panelPessoa').textContent = nome;
+    document.getElementById('resultadoPessoa').innerHTML = `
+        <div class="cg-member-preview" style="border-color:#10b981;">
+            <i class="ph ph-check-circle" style="color:#10b981;"></i>
+            <div><strong>${nome}</strong><span>Vinculado</span></div>
+            <span class="match-tag" style="background:#dcfce7;color:#16a34a;">✓ OK</span>
+        </div>
+    `;
+}
+
+// Busca ao pressionar Enter
+document.getElementById('searchPessoa').addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); buscarPessoa(); }
+});
+</script>
 {% endblock %}

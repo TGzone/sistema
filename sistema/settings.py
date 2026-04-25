@@ -96,7 +96,6 @@ USE_I18N = True
 USE_TZ = True
 
 # 9. ARQUIVOS ESTÁTICOS (CSS, JS, IMAGENS)
-#STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
@@ -104,9 +103,25 @@ STATICFILES_DIRS = [
 ]
 
 # 10. MEDIA (UPLOADS DE ARQUIVOS)
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Tipo padrão de ID para o banco
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Modelo customizado (você já tem)
+AUTH_USER_MODEL = 'usuarios.UsuarioSistema'
+ 
+# Onde está a tela de login
+LOGIN_URL = '/usuarios/login/'          # <-- caminho real, não namespace
+ 
+# Para onde vai após login
+LOGIN_REDIRECT_URL = '/dashboard/'
+ 
+# Para onde vai após logout
+LOGOUT_REDIRECT_URL = '/usuarios/login/'
+ 
+# AUTHENTICATION BACKENDS — SEM ISSO O authenticate() NÃO FUNCIONA com email
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
