@@ -20,4 +20,8 @@ urlpatterns = [
     # Ativação e Desativação (As novas funções!)
     path('ativar/<int:pk>/', views.ativar_membro, name='ativar_membro'),
     path('desativar/<int:pk>/', views.desativar_membro, name='desativar_membro'),
+    
+    path('cadastro-membro/', views.auto_cadastro, name='auto_cadastro'),
+
+
 ]

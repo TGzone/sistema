@@ -5,15 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestão Ministerial{% endblock %}</title>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
     <link rel="stylesheet" href="{% static 'assets/css/base/base.css' %}">
-
     {% block extra_css %}{% endblock %}
     {% block extrastyle %}{% endblock %}
 </head>
@@ -28,16 +24,16 @@
                 </div>
                 <span class="logo-text">Lumina<strong>Gestão</strong></span>
             </div>
-            
+
             <nav class="sidebar-nav">
-                 <div class="nav-item has-submenu">
+                <div class="nav-item has-submenu">
                     <button class="submenu-btn">
-                        <i class="ph ph-users"></i>
+                        <i class="ph ph-gauge"></i>
                         <span>Dashboard</span>
                         <i class="ph ph-caret-down arrow-icon"></i>
                     </button>
                     <div class="submenu">
-                       
+                        <a href="{% url 'dashboard' %}" class="submenu-link">Visão Geral</a>
                         <a href="#" class="submenu-link">Relatórios</a>
                     </div>
                 </div>
@@ -54,7 +50,7 @@
                         <a href="#" class="submenu-link">Relatórios</a>
                     </div>
                 </div>
-                 
+
                 <div class="nav-item has-submenu">
                     <button class="submenu-btn">
                         <i class="ph ph-currency-dollar"></i>
@@ -79,8 +75,6 @@
                     <div class="submenu">
                         <a href="{% url 'igrejas:cadastro' %}" class="submenu-link">Cadastro de Igrejas</a>
                         <a href="{% url 'igrejas:lista' %}" class="submenu-link">Lista de Igrejas</a>
-                        <a href="#" class="submenu-link">Cultos</a>
-                        <a href="#" class="submenu-link">Unidades</a>
                     </div>
                 </div>
 
@@ -93,25 +87,22 @@
                     <div class="submenu">
                         <a href="#" class="submenu-link">Lista de Cultos</a>
                         <a href="#" class="submenu-link">Novo Culto</a>
-                        <a href="#" class="submenu-link">Relatórios</a>
                     </div>
                 </div>
-               
-                 <div class="nav-item has-submenu">
+
+                <div class="nav-item has-submenu">
                     <button class="submenu-btn">
-                        <i class="ph ph-cross"></i>
-                        <span>Usuarios</span>
+                        <i class="ph ph-shield-check"></i>
+                        <span>Usuários</span>
                         <i class="ph ph-caret-down arrow-icon"></i>
                     </button>
                     <div class="submenu">
-                        <a href="{% url 'usuarios:cadastro_usuarios_sistema' %}" class="submenu-link">Cadastrar um Usuarios</a>
+                        <a href="{% url 'usuarios:cadastro_usuarios_sistema' %}" class="submenu-link">Cadastrar Usuário</a>
                         <a href="{% url 'usuarios:lista_solicitacoes' %}" class="submenu-link">Lista de Solicitações</a>
                     </div>
                 </div>
-            
-            
             </nav>
-            
+
             <div class="sidebar-footer">
                 <button class="config-btn">
                     <i class="ph ph-gear"></i>
@@ -131,24 +122,28 @@
                         <input type="text" placeholder="Buscar membros, transações...">
                     </div>
                 </div>
-                
+
                 <div class="topbar-right">
                     <button class="icon-btn notification-btn">
                         <i class="ph ph-bell"></i>
                         <span class="badge"></span>
                     </button>
-                    <button id="openModalBtn" class="icon-btn">
-                        <i class="ph ph-plus"></i>
-                    </button>
+
                     <div class="user-profile">
+                        <!-- Iniciais do nome do usuário logado -->
                         <div class="avatar">
-                            <span>AD</span>
+                            <span>{{ request.user.nome_solicitante|slice:":2"|upper }}</span>
                         </div>
+
                         <div class="user-info">
-                            <span class="user-name">Admin Sistema</span>
-                            <span class="user-role">tiago.ald</span>
+                            <!-- Nome completo -->
+                            <span class="user-name">{{ request.user.nome_solicitante }}</span>
+                            <!-- Cargo formatado pelo choices do model -->
+                            <span class="user-role">{{ request.user.get_perfil_display }}</span>
                         </div>
+
                         <i class="ph ph-caret-down dropdown-arrow"></i>
+
                         <div class="user-dropdown">
                             <a href="#" class="dropdown-item">
                                 <i class="ph ph-user"></i>
@@ -159,7 +154,8 @@
                                 <span>Configurações</span>
                             </a>
                             <div class="dropdown-divider"></div>
-                            <a href="#" class="dropdown-item logout">
+                            <!-- Logout real -->
+                            <a href="{% url 'usuarios:logout' %}" class="dropdown-item logout">
                                 <i class="ph ph-sign-out"></i>
                                 <span>Sair</span>
                             </a>
@@ -170,24 +166,13 @@
 
             <div class="content-area">
                 <div class="content-wrapper">
-                    {% block content %}
-                    {% endblock %}
+                    {% block content %}{% endblock %}
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modal -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2>Modal de Exemplo</h2>
-            <p>Este é um modal que abre ao clicar no botão.</p>
-        </div>
-    </div>
-
     <script src="{% static 'assets/js/base/base.js' %}"></script>
     {% block extra_js %}{% endblock %}
-
 </body>
 </html>

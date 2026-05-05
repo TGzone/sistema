@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import JsonResponse
+
 from usuarios.permissoes import perfil_requerido
 from .models import UsuarioSistema
 from igrejas.models import Igreja
@@ -12,15 +13,13 @@ from pessoas.models import Pessoa
 # ─────────────────────────────────────────────
 # 1. LOGIN
 # ─────────────────────────────────────────────
-
-
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
 
     if request.method == 'POST':
         email = request.POST.get('email', '').strip()
-        senha = request.POST.get('password', '')   # HTML usa name="password"
+        senha = request.POST.get('password', '')
 
         usuario = authenticate(request, username=email, password=senha)
 
@@ -51,7 +50,7 @@ def logout_view(request):
 
 
 # ─────────────────────────────────────────────
-# 3. CADASTRO PÚBLICO (Porta da Rua)
+# 3. CADASTRO PÚBLICO
 # ─────────────────────────────────────────────
 def cadastro_usuarios(request):
     igrejas = Igreja.objects.filter(status='ATIVO').order_by('nome')
@@ -61,7 +60,7 @@ def cadastro_usuarios(request):
         email     = request.POST.get('email', '').strip()
         telefone  = request.POST.get('telefone', '').strip()
         igreja_id = request.POST.get('igreja_id')
-        perfil    = request.POST.get('perfil_solicitado', 'tesoureiro')
+        perfil    = request.POST.get('perfil_solicitado', 'TESOUREIRO')
         senha     = request.POST.get('senha', '')
         confirma  = request.POST.get('confirmar_senha', '')
 
@@ -91,7 +90,7 @@ def cadastro_usuarios(request):
 
 
 # ─────────────────────────────────────────────
-# 4. CADASTRO INTERNO (Porta VIP)
+# 4. CADASTRO INTERNO (VIP)
 # ─────────────────────────────────────────────
 @login_required
 @perfil_requerido('PRESIDENTE', 'PASTOR_UNIDADE')
@@ -103,7 +102,7 @@ def cadastro_usuarios_sistema(request):
         email     = request.POST.get('email', '').strip()
         telefone  = request.POST.get('telefone', '').strip()
         igreja_id = request.POST.get('igreja_id')
-        perfil    = request.POST.get('perfil_solicitado', 'tesoureiro')
+        perfil    = request.POST.get('perfil_solicitado', 'TESOUREIRO')
         senha     = request.POST.get('senha', '')
         confirma  = request.POST.get('confirmar_senha', '')
 
@@ -138,14 +137,14 @@ def cadastro_usuarios_sistema(request):
 @login_required
 @perfil_requerido('PRESIDENTE', 'PASTOR_UNIDADE')
 def lista_solicitacoes(request):
-    if request.user.perfil == 'presidente':
-        pendentes = UsuarioSistema.objects.filter(status='PENDENTE').select_related('igreja')
+    if str(request.user.perfil).upper() == 'PRESIDENTE':
+        pendentes = UsuarioSistema.objects.filter(status='PENDENTE').select_related('igreja', 'pessoa')
         ativos    = UsuarioSistema.objects.filter(status='ATIVO').select_related('igreja', 'pessoa')
-        inativos  = UsuarioSistema.objects.filter(status='INATIVO').select_related('igreja')
+        inativos  = UsuarioSistema.objects.filter(status='INATIVO').select_related('igreja', 'pessoa')
     else:
-        pendentes = UsuarioSistema.objects.filter(status='PENDENTE', igreja=request.user.igreja).select_related('igreja')
+        pendentes = UsuarioSistema.objects.filter(status='PENDENTE', igreja=request.user.igreja).select_related('igreja', 'pessoa')
         ativos    = UsuarioSistema.objects.filter(status='ATIVO',    igreja=request.user.igreja).select_related('igreja', 'pessoa')
-        inativos  = UsuarioSistema.objects.filter(status='INATIVO',  igreja=request.user.igreja).select_related('igreja')
+        inativos  = UsuarioSistema.objects.filter(status='INATIVO',  igreja=request.user.igreja).select_related('igreja', 'pessoa')
 
     return render(request, 'usuarios/lista_solicitacoes.html', {
         'solicitacoes_pendentes': pendentes,
@@ -175,7 +174,28 @@ def aprovar_usuario(request, pk):
 
 
 # ─────────────────────────────────────────────
-# 7. NEGAR / REVOGAR / REATIVAR
+# 7. VINCULAR PESSOA (separado — para usuários já ativos)
+# ─────────────────────────────────────────────
+@login_required
+@perfil_requerido('PRESIDENTE', 'PASTOR_UNIDADE')
+def vincular_pessoa(request, pk):
+    usuario = get_object_or_404(UsuarioSistema, pk=pk)
+    if request.method == 'POST':
+        pessoa_id = request.POST.get('pessoa_id')
+        if pessoa_id:
+            try:
+                usuario.pessoa = Pessoa.objects.get(pk=pessoa_id)
+                usuario.save()
+                messages.success(request, f'{usuario.nome_solicitante} vinculado a {usuario.pessoa.nome}!')
+            except Pessoa.DoesNotExist:
+                messages.error(request, 'Pessoa não encontrada.')
+        else:
+            messages.error(request, 'Selecione uma pessoa antes de salvar.')
+    return redirect('usuarios:lista_solicitacoes')
+
+
+# ─────────────────────────────────────────────
+# 8. NEGAR / REVOGAR / REATIVAR
 # ─────────────────────────────────────────────
 @login_required
 @perfil_requerido('PRESIDENTE', 'PASTOR_UNIDADE')
@@ -208,7 +228,7 @@ def reativar_usuario(request, pk):
 
 
 # ─────────────────────────────────────────────
-# 8. API — busca de pessoas para vincular
+# 9. API — busca de pessoas para vincular
 # ─────────────────────────────────────────────
 @login_required
 def api_buscar_pessoa(request):
@@ -218,5 +238,5 @@ def api_buscar_pessoa(request):
     pessoas = Pessoa.objects.filter(nome__icontains=termo, ativo=True)[:10]
     return JsonResponse(
         [{'id': p.id, 'nome': p.nome, 'tipo': p.get_tipo_display()} for p in pessoas],
-        safe=False
+        safe=False,
     )

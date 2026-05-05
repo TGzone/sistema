@@ -30,6 +30,8 @@ def financeiro(request):
 # =========================================================
 # 1. FLUXO DE REGISTROS (Movimentações / Entradas)
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def movimentacoes(request):
     igreja_atual = Igreja.objects.first()
 
@@ -66,6 +68,8 @@ def movimentacoes(request):
 # =========================================================
 # 2. CENTRAL DE OBRIGAÇÕES (Contas a Pagar)
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def contas(request):
     igreja_atual = Igreja.objects.first()
 
@@ -155,6 +159,8 @@ def contas(request):
 # =========================================================
 # 3. EXCLUIR CONTA
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def deletar_conta(request, conta_id):
     igreja_atual = Igreja.objects.first()
     conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
@@ -165,6 +171,8 @@ def deletar_conta(request, conta_id):
 # =========================================================
 # 4. PAGAMENTO DIRETO POR URL (rota legada)
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def pagar_conta(request, conta_id):
     igreja_atual = Igreja.objects.first()
     conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
@@ -185,6 +193,8 @@ def pagar_conta(request, conta_id):
 # =========================================================
 # 5. COCKPIT BANCÁRIO
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def banco(request):
     igreja_atual = Igreja.objects.first()
 
@@ -211,11 +221,15 @@ def banco(request):
 # =========================================================
 # 6. AUXILIARES
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def conta_detalhes(request, conta_id):
     igreja_atual = Igreja.objects.first()
     conta = get_object_or_404(Obrigacao, id=conta_id, igreja=igreja_atual)
     return render(request, "financeiro/conta_detalhes.html", {'conta': conta})
 
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def nova_conta(request):
     if request.method == 'POST':
         igreja_atual = Igreja.objects.first()
@@ -233,6 +247,8 @@ def nova_conta(request):
 # =========================================================
 # 7. CENTRAL DE MANUTENÇÃO
 # =========================================================
+@login_required
+@perfil_requerido(*PERFIS_GERENCIAIS)
 def manutencao(request):
     igreja_atual = Igreja.objects.first()
     if request.method == 'POST':

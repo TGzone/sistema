@@ -12,7 +12,7 @@ from usuarios.permissoes import perfil_requerido, PERFIS_MASTER, PERFIS_GERENCIA
 # --- ESTRUTURA BASE ---
 
 
-@perfil_requerido('PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE', 'LIDER_DEPARTAMENTO', 'MIDIA')
+@perfil_requerido(*PERFIS_OPERACIONAIS)
 @login_required
 @never_cache
 def base(request):
@@ -25,7 +25,7 @@ def home(request):
     return render(request, "home.html")
 
 @login_required
-@perfil_requerido(*PERFIS_GERENCIAIS)
+@perfil_requerido(*PERFIS_OPERACIONAIS)
 @never_cache
 def dashboard(request):
     return render(request, "dashboard.html")    
@@ -54,6 +54,7 @@ def cultos(request):
 @never_cache
 def financeiro(request):
     return render(request, "financeiro/financeiro.html")
+
 
 def usuarios (request):
     return render(request, "usuarios/usuarios.html")

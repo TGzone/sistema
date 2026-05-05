@@ -35,7 +35,6 @@
 
     <div class="cg-access-layout">
 
-        <!-- SIDEBAR: Lista de usuários -->
         <aside class="cg-access-sidebar">
             <div class="cg-filter-bar">
                 <button class="cg-filter-btn active" data-tab="pendentes">Pendentes</button>
@@ -52,13 +51,25 @@
             <div class="cg-request-list" id="tab-pendentes">
                 {% for u in solicitacoes_pendentes %}
                 <div class="cg-request-card {% if forloop.first %}active{% endif %}"
-                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'pendente')"
-                     data-nome="{{ u.nome|lower }}">
+                     onclick="selecionarUsuario(
+                         '{{ u.id }}',
+                         '{{ u.nome_solicitante|escapejs }}',
+                         '{{ u.email }}',
+                         '{{ u.telefone|default:'' }}',
+                         '{{ u.get_perfil_display }}',
+                         'PENDENTE',
+                         '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}',
+                         '{{ u.criado_em|date:'d/m/Y' }}',
+                         '{{ u.pessoa.nome|default:''|escapejs }}',
+                         'pendente'
+                     )"
+                     data-nome="{{ u.nome_solicitante|lower }}">
                     <div class="cg-card-icon pending">
                         <i class="ph ph-user-plus"></i>
                     </div>
                     <div class="cg-card-info">
-                        <h3>{{ u.nome }}</h3>
+                        {# CORRIGIDO: nome_solicitante (não nome) #}
+                        <h3>{{ u.nome_solicitante }}</h3>
                         <p>Solicitou: <strong>{{ u.get_perfil_display }}</strong></p>
                         <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
                     </div>
@@ -79,15 +90,33 @@
             <div class="cg-request-list" id="tab-ativos" style="display:none;">
                 {% for u in usuarios_ativos %}
                 <div class="cg-request-card approved"
-                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'ativo')"
-                     data-nome="{{ u.nome|lower }}">
+                     onclick="selecionarUsuario(
+                         '{{ u.id }}',
+                         '{{ u.nome_solicitante|escapejs }}',
+                         '{{ u.email }}',
+                         '{{ u.telefone|default:'' }}',
+                         '{{ u.get_perfil_display }}',
+                         'ATIVO',
+                         '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}',
+                         '{{ u.criado_em|date:'d/m/Y' }}',
+                         '{{ u.pessoa.nome|default:''|escapejs }}',
+                         'ativo'
+                     )"
+                     data-nome="{{ u.nome_solicitante|lower }}">
                     <div class="cg-card-icon success">
                         <i class="ph ph-check-circle"></i>
                     </div>
                     <div class="cg-card-info">
-                        <h3>{{ u.nome }}</h3>
+                        <h3>{{ u.nome_solicitante }}</h3>
                         <p>Acesso: <strong>{{ u.get_perfil_display }}</strong></p>
+                        {# Mostra a pessoa vinculada se existir #}
+                        {% if u.pessoa %}
+                        <span class="cg-church-tag" style="background:#dcfce7;color:#16a34a;">
+                            <i class="ph ph-link-simple"></i> {{ u.pessoa.nome }}
+                        </span>
+                        {% else %}
                         <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
+                        {% endif %}
                     </div>
                     <div class="cg-card-meta">
                         <span class="status-label">ATIVO</span>
@@ -102,18 +131,29 @@
             <div class="cg-request-list" id="tab-inativos" style="display:none;">
                 {% for u in usuarios_inativos %}
                 <div class="cg-request-card"
-                     onclick="selecionarUsuario('{{ u.id }}', '{{ u.nome|escapejs }}', '{{ u.email }}', '{{ u.telefone }}', '{{ u.get_perfil_display }}', '{{ u.get_status_display }}', '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}', '{{ u.criado_em|date:'d/m/Y \à\s H:i' }}', '{{ u.pessoa.nome|default:''|escapejs }}', 'inativo')"
-                     data-nome="{{ u.nome|lower }}">
+                     onclick="selecionarUsuario(
+                         '{{ u.id }}',
+                         '{{ u.nome_solicitante|escapejs }}',
+                         '{{ u.email }}',
+                         '{{ u.telefone|default:'' }}',
+                         '{{ u.get_perfil_display }}',
+                         'INATIVO',
+                         '{{ u.igreja.nome|default:'Sem Igreja'|escapejs }}',
+                         '{{ u.criado_em|date:'d/m/Y' }}',
+                         '{{ u.pessoa.nome|default:''|escapejs }}',
+                         'inativo'
+                     )"
+                     data-nome="{{ u.nome_solicitante|lower }}">
                     <div class="cg-card-icon" style="background:#fee2e2;">
                         <i class="ph ph-x-circle" style="color:#ef4444;"></i>
                     </div>
                     <div class="cg-card-info">
-                        <h3>{{ u.nome }}</h3>
+                        <h3>{{ u.nome_solicitante }}</h3>
                         <p>{{ u.get_perfil_display }}</p>
                         <span class="cg-church-tag">{{ u.igreja.nome|default:"Sem Igreja" }}</span>
                     </div>
                     <div class="cg-card-meta">
-                        <span class="status-label" style="color:#ef4444;">{{ u.get_status_display|upper }}</span>
+                        <span class="status-label" style="color:#ef4444;">INATIVO</span>
                     </div>
                 </div>
                 {% empty %}
@@ -125,13 +165,11 @@
         <!-- PAINEL DE ANÁLISE -->
         <main class="cg-access-analysis" id="analysisPanel">
 
-            <!-- Estado vazio -->
             <div id="emptyPanel" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:#94a3b8;">
                 <i class="ph ph-cursor-click" style="font-size:48px;"></i>
                 <p>Selecione um usuário ao lado para analisar.</p>
             </div>
 
-            <!-- Painel preenchido via JS -->
             <div id="activePanel" style="display:none;">
                 <div class="cg-analysis-header">
                     <div class="cg-user-avatar" id="panelAvatar">--</div>
@@ -160,18 +198,18 @@
                         </div>
                         <div class="cg-info-item">
                             <label>Pessoa Vinculada</label>
-                            <span id="panelPessoa">Não vinculado</span>
+                            <span id="panelPessoa" style="font-weight:600;">Não vinculado</span>
                         </div>
                     </div>
                 </section>
 
-                <!-- Vincular membro (apenas pendentes) -->
+                <!-- Vincular membro — aparece sempre (pendente E ativo sem vínculo) -->
                 <section class="cg-analysis-section cg-link-section" id="sectionVincular">
                     <div class="cg-section-title"><i class="ph ph-link"></i> Vincular ao Cadastro de Membro</div>
-                    <p class="cg-help-text">Opcional, mas recomendado. Vincula o login a uma pessoa já cadastrada.</p>
+                    <p class="cg-help-text">Digite o nome para buscar uma pessoa já cadastrada no sistema.</p>
                     <div class="cg-link-box">
                         <div class="cg-search-member">
-                            <input type="text" id="searchPessoa" placeholder="Digite o nome do membro...">
+                            <input type="text" id="searchPessoa" placeholder="Nome do membro...">
                             <button type="button" class="btn-search-link" onclick="buscarPessoa()">
                                 <i class="ph ph-magnifying-glass"></i>
                             </button>
@@ -180,20 +218,18 @@
                     </div>
                 </section>
 
-                <!-- Ações -->
-                <div class="cg-analysis-actions" id="panelAcoes">
-                    <!-- Preenchido via JS conforme o status -->
-                </div>
+                <div class="cg-analysis-actions" id="panelAcoes"></div>
             </div>
         </main>
     </div>
 </div>
 
 <!-- Forms ocultos para POST -->
-<form id="formAprovar" method="POST" style="display:none;">{% csrf_token %}<input type="hidden" name="pessoa_id" id="pessoaVinculadaId"></form>
-<form id="formNegar"   method="POST" style="display:none;">{% csrf_token %}</form>
-<form id="formRevogar" method="POST" style="display:none;">{% csrf_token %}</form>
-<form id="formReativar"method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formAprovar"  method="POST" style="display:none;">{% csrf_token %}<input type="hidden" name="pessoa_id" id="pessoaVinculadaId"></form>
+<form id="formNegar"    method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formRevogar"  method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formReativar" method="POST" style="display:none;">{% csrf_token %}</form>
+<form id="formVincular" method="POST" style="display:none;">{% csrf_token %}<input type="hidden" name="pessoa_id" id="vincularPessoaId"></form>
 {% endblock %}
 
 {% block extra_js %}
@@ -202,97 +238,128 @@ const URL_BASE_APROVAR  = "{% url 'usuarios:aprovar'  pk=0 %}".replace('/0/', '/
 const URL_BASE_NEGAR    = "{% url 'usuarios:negar'    pk=0 %}".replace('/0/', '/');
 const URL_BASE_REVOGAR  = "{% url 'usuarios:revogar'  pk=0 %}".replace('/0/', '/');
 const URL_BASE_REATIVAR = "{% url 'usuarios:reativar' pk=0 %}".replace('/0/', '/');
+const URL_BASE_VINCULAR = "{% url 'usuarios:vincular' pk=0 %}".replace('/0/', '/');
 const URL_BUSCA_PESSOA  = "{% url 'usuarios:api_buscar_pessoa' %}";
 
-let usuarioAtualId   = null;
+let usuarioAtualId    = null;
 let pessoaVinculadaId = null;
+let statusAtual       = null;
 
-// ── Tabs ──────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────────────────────────
 document.querySelectorAll('.cg-filter-btn').forEach(btn => {
     btn.addEventListener('click', function () {
         document.querySelectorAll('.cg-filter-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
-        ['pendentes', 'ativos', 'inativos'].forEach(tab => {
-            document.getElementById(`tab-${tab}`).style.display = 'none';
-        });
+        ['pendentes', 'ativos', 'inativos'].forEach(tab =>
+            document.getElementById(`tab-${tab}`).style.display = 'none'
+        );
         document.getElementById(`tab-${this.dataset.tab}`).style.display = 'block';
     });
 });
 
-// ── Busca na sidebar ──────────────────────────
+// ── Busca na sidebar ──────────────────────────────────────────────────────────
 document.getElementById('searchUsuario').addEventListener('input', function () {
     const termo = this.value.toLowerCase();
     document.querySelectorAll('.cg-request-card').forEach(card => {
-        const nome = card.dataset.nome || '';
-        card.style.display = nome.includes(termo) ? '' : 'none';
+        card.style.display = (card.dataset.nome || '').includes(termo) ? '' : 'none';
     });
 });
 
-// ── Selecionar usuário ────────────────────────
+// ── Selecionar usuário ────────────────────────────────────────────────────────
 function selecionarUsuario(id, nome, email, telefone, perfil, status, igreja, data, pessoa, statusRaw) {
-    usuarioAtualId = id;
+    usuarioAtualId    = id;
     pessoaVinculadaId = null;
+    statusAtual       = statusRaw;
 
     document.getElementById('emptyPanel').style.display  = 'none';
     document.getElementById('activePanel').style.display = 'block';
 
+    // Avatar com iniciais
     const iniciais = nome.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
-    document.getElementById('panelAvatar').textContent    = iniciais;
-    document.getElementById('panelNome').textContent      = nome;
-    document.getElementById('panelEmail').textContent     = email;
-    document.getElementById('panelTelefone').textContent  = telefone || 'Não informado';
-    document.getElementById('panelIgreja').textContent    = igreja;
-    document.getElementById('panelPerfil').textContent    = perfil;
-    document.getElementById('panelData').textContent      = data;
-    document.getElementById('panelPessoa').textContent    = pessoa || 'Não vinculado';
+    document.getElementById('panelAvatar').textContent   = iniciais;
+    document.getElementById('panelNome').textContent     = nome;
+    document.getElementById('panelEmail').textContent    = email;
+    document.getElementById('panelTelefone').textContent = telefone || 'Não informado';
+    document.getElementById('panelIgreja').textContent   = igreja;
+    document.getElementById('panelPerfil').textContent   = perfil;
+    document.getElementById('panelData').textContent     = data;
+    document.getElementById('panelPessoa').textContent   = pessoa || 'Não vinculado';
 
+    // Badge de status
     const badge = document.getElementById('panelBadge');
-    const cores  = { pendente: 'warning', ativo: 'success', inativo: 'danger', negado: 'danger' };
-    badge.className = `cg-analysis-badge ${cores[statusRaw] || 'warning'}`;
+    const cores  = { pendente: 'warning', ativo: 'success', inativo: 'danger' };
+    badge.className   = `cg-analysis-badge ${cores[statusRaw] || 'warning'}`;
     badge.textContent = status;
 
-    // Seção vincular: só para pendentes
-    document.getElementById('sectionVincular').style.display = statusRaw === 'pendente' ? '' : 'none';
+    // Seção vincular: sempre visível (exceto inativo já com vínculo)
+    document.getElementById('sectionVincular').style.display =
+        statusRaw === 'inativo' ? 'none' : '';
+
+    // Limpa busca anterior
+    document.getElementById('searchPessoa').value = '';
+    document.getElementById('resultadoPessoa').innerHTML = '';
 
     // Botões de ação
     const acoes = document.getElementById('panelAcoes');
-    acoes.innerHTML = '';
-
     if (statusRaw === 'pendente') {
         acoes.innerHTML = `
-            <button class="cg-btn-deny"    onclick="executarAcao('negar')"><i class="ph ph-x-circle"></i> Negar</button>
-            <button class="cg-btn-approve" onclick="executarAcao('aprovar')"><i class="ph ph-check-circle"></i> Aprovar</button>
+            <button class="cg-btn-deny"    onclick="executarAcao('negar')">
+                <i class="ph ph-x-circle"></i> Negar
+            </button>
+            <button class="cg-btn-approve" onclick="executarAcao('aprovar')">
+                <i class="ph ph-check-circle"></i> Aprovar
+            </button>
         `;
     } else if (statusRaw === 'ativo') {
         acoes.innerHTML = `
-            <button class="cg-btn-deny" onclick="executarAcao('revogar')"><i class="ph ph-lock-key"></i> Revogar Acesso</button>
+            <button class="cg-btn-deny" onclick="executarAcao('revogar')">
+                <i class="ph ph-lock-key"></i> Revogar Acesso
+            </button>
+            <button class="cg-btn-approve" onclick="executarAcao('vincular')" id="btnVincular" style="background:#3b82f6;">
+                <i class="ph ph-link"></i> Salvar Vínculo
+            </button>
         `;
     } else {
         acoes.innerHTML = `
-            <button class="cg-btn-approve" onclick="executarAcao('reativar')"><i class="ph ph-arrow-clockwise"></i> Reativar</button>
+            <button class="cg-btn-approve" onclick="executarAcao('reativar')">
+                <i class="ph ph-arrow-clockwise"></i> Reativar
+            </button>
         `;
     }
 
-    // Destacar card selecionado
+    // Destaca card
     document.querySelectorAll('.cg-request-card').forEach(c => c.classList.remove('active'));
     event.currentTarget.classList.add('active');
 }
 
-// ── Ações via form POST ───────────────────────
+// ── Executar ação via POST ────────────────────────────────────────────────────
 function executarAcao(acao) {
     if (!usuarioAtualId) return;
 
-    const forms = {
+    if (acao === 'vincular') {
+        if (!pessoaVinculadaId) {
+            alert('Selecione uma pessoa para vincular primeiro.');
+            return;
+        }
+        const form = document.getElementById('formVincular');
+        form.action = URL_BASE_VINCULAR + usuarioAtualId + '/';
+        document.getElementById('vincularPessoaId').value = pessoaVinculadaId;
+        form.submit();
+        return;
+    }
+
+    const mapa = {
         aprovar:  { form: 'formAprovar',  url: URL_BASE_APROVAR },
         negar:    { form: 'formNegar',    url: URL_BASE_NEGAR },
         revogar:  { form: 'formRevogar',  url: URL_BASE_REVOGAR },
         reativar: { form: 'formReativar', url: URL_BASE_REATIVAR },
     };
 
-    const { form, url } = forms[acao];
+    const { form, url } = mapa[acao];
     const el = document.getElementById(form);
     el.action = url + usuarioAtualId + '/';
 
+    // Se aprovar com pessoa vinculada, inclui no POST
     if (acao === 'aprovar' && pessoaVinculadaId) {
         document.getElementById('pessoaVinculadaId').value = pessoaVinculadaId;
     }
@@ -300,7 +367,7 @@ function executarAcao(acao) {
     el.submit();
 }
 
-// ── Busca de pessoa para vincular ─────────────
+// ── Busca de pessoa ───────────────────────────────────────────────────────────
 function buscarPessoa() {
     const termo = document.getElementById('searchPessoa').value.trim();
     if (termo.length < 2) return;
@@ -310,11 +377,11 @@ function buscarPessoa() {
         .then(data => {
             const div = document.getElementById('resultadoPessoa');
             if (!data.length) {
-                div.innerHTML = '<p style="color:#94a3b8; font-size:13px;">Nenhuma pessoa encontrada.</p>';
+                div.innerHTML = '<p style="color:#94a3b8;font-size:13px;">Nenhuma pessoa encontrada.</p>';
                 return;
             }
             div.innerHTML = data.map(p => `
-                <div class="cg-member-preview" onclick="vincularPessoa('${p.id}', '${p.nome.replace(/'/g, "\\'")}')">
+                <div class="cg-member-preview" onclick="vincularPessoa('${p.id}', '${p.nome.replace(/'/g,"\\'")}')">
                     <i class="ph ph-identification-card"></i>
                     <div><strong>${p.nome}</strong><span>${p.tipo}</span></div>
                     <span class="match-tag">Selecionar</span>
@@ -329,13 +396,12 @@ function vincularPessoa(id, nome) {
     document.getElementById('resultadoPessoa').innerHTML = `
         <div class="cg-member-preview" style="border-color:#10b981;">
             <i class="ph ph-check-circle" style="color:#10b981;"></i>
-            <div><strong>${nome}</strong><span>Vinculado</span></div>
+            <div><strong>${nome}</strong><span>Selecionado</span></div>
             <span class="match-tag" style="background:#dcfce7;color:#16a34a;">✓ OK</span>
         </div>
     `;
 }
 
-// Busca ao pressionar Enter
 document.getElementById('searchPessoa').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); buscarPessoa(); }
 });

@@ -1,28 +1,44 @@
-# usuarios/permissoes.py (Ajustado)
-from django.core.exceptions import PermissionDenied
+# usuarios/permissoes.py
+# NÃO importar nada de 'usuarios' aqui — causa circular import.
+
 from functools import wraps
 from django.shortcuts import redirect
+from django.contrib import messages
 
-# DEFINIÇÃO DOS GRUPOS DE ACESSO (CRACHÁS)
-PERFIS_MASTER = ['PRESIDENTE', 'DIRETORIA']
-PERFIS_GERENCIAIS = ['PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE']
-PERFIS_FINANCEIROS = ['PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE', 'TESOUREIRO']
-PERFIS_OPERACIONAIS = ['PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE', 'LIDER_DEPARTAMENTO', 'MIDIA']
 
-def perfil_requerido(*perfis_permitidos):
+def perfil_requerido(*perfis):
+    """
+    Bloqueia a view se o perfil do usuário não estiver na lista.
+    Sempre use com @login_required acima.
+    """
     def decorator(view_func):
         @wraps(view_func)
-        def _wrapped_view(request, *args, **kwargs):
+        def wrapper(request, *args, **kwargs):
             if not request.user.is_authenticated:
                 return redirect('usuarios:login')
-            
-            # PULO DO GATO: Converte o perfil do usuário para maiúsculo para garantir a leitura correta
-            perfil_usuario = str(request.user.perfil).upper() if request.user.perfil else ''
-            
-            if perfil_usuario in perfis_permitidos:
-                return view_func(request, *args, **kwargs)
-            
-            raise PermissionDenied("Acesso Negado: Seu perfil não tem permissão para esta área.")
-            
-        return _wrapped_view
+            perfil_atual = str(getattr(request.user, 'perfil', '')).upper()
+            if perfil_atual not in [p.upper() for p in perfis]:
+                messages.error(request, 'Você não tem permissão para acessar esta área.')
+                return redirect('dashboard')
+            return view_func(request, *args, **kwargs)
+        return wrapper
     return decorator
+
+
+def filtrar_por_igreja(queryset, user, campo='igreja'):
+    """
+    Presidente vê tudo. Os demais veem só a própria igreja.
+    Uso: qs = filtrar_por_igreja(Pessoa.objects.all(), request.user, campo='unidade')
+    """
+    if str(getattr(user, 'perfil', '')).upper() == 'PRESIDENTE':
+        return queryset
+    return queryset.filter(**{campo: user.igreja})
+
+
+# ── Grupos de perfil ──────────────────────────────────────────────────────────
+# Nomes em maiúsculo para bater com os choices do model e com o views.py central
+
+PERFIS_MASTER       = ('PRESIDENTE', 'DIRETORIA')
+PERFIS_GERENCIAIS   = ('PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE')
+PERFIS_FINANCEIROS  = ('PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE', 'TESOUREIRO')
+PERFIS_OPERACIONAIS = ('PRESIDENTE', 'DIRETORIA', 'PASTOR_UNIDADE', 'LIDER_DEPARTAMENTO', 'MIDIA')
