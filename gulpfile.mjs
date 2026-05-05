@@ -1,8 +1,11 @@
 import gulp from 'gulp';
 import open from 'gulp-open';
 
-// Task to open the browser
+// Sua tarefa original
 gulp.task('open-app', function(){
-  gulp.src('pages/dashboard.html')
+  return gulp.src('pages/dashboard.html')
   .pipe(open());
 });
+
+// NOVA LINHA: Define a tarefa padrão que o Netlify procura
+gulp.task('default', gulp.series('open-app'));
