@@ -13,30 +13,60 @@
         <h1 class="cg-header-title">Fluxo de Registros</h1>
         <div class="cg-unit-indicator">
             <span class="cg-unit-label">Unidade Ativa:</span>
-            {# TODO: passar igreja no context da view quando tiver autenticação #}
             <span class="cg-unit-name">{{ igreja.nome|default:"Sede Central" }}</span>
         </div>
     </div>
 </div>
 
 <div class="cg-main-layout">
+
+    <!-- FORMULÁRIO -->
     <div class="cg-form-section">
         <div class="cg-card">
             <div class="cg-card-header">
                 <h2 class="cg-card-title">Novo Lançamento</h2>
             </div>
             <div class="cg-card-body">
-                {# FIX: action apontando para a view correta. enctype removido por enquanto (comprovante não está no model) #}
-                <form action="{% url 'financeiro:movimentacoes' %}" method="POST" class="cg-form">
+                <form
+                    action="{% url 'financeiro:movimentacoes' %}"
+                    method="POST"
+                    class="cg-form"
+                    id="form-movimentacao"
+                    data-api-membros="{% url 'financeiro:api_membros' %}"
+                >
                     {% csrf_token %}
 
-                    {# Campo de membro — opcional, sem JS por enquanto #}
+                    <!-- Membro / Doador -->
                     <div class="cg-form-group">
-                        <label class="cg-form-label">Membro / Doador <span class="text-muted small">(opcional)</span></label>
-                        <input type="text" name="membro_nome" class="cg-input"
-                               placeholder="Nome do membro ou doador...">
+                        <label class="cg-form-label">
+                            Membro / Doador
+                            <span class="text-muted small">(opcional)</span>
+                        </label>
+
+                        <div class="cg-membro-wrapper">
+                            <input
+                                type="text"
+                                id="membro-busca"
+                                class="cg-input"
+                                placeholder="Digite o nome para buscar..."
+                                autocomplete="off"
+                            >
+                            <input type="hidden" name="membro_id" id="membro-id">
+                            <div class="cg-membro-results" id="membro-results"></div>
+                        </div>
+
+                        <div class="cg-membro-tag" id="membro-tag">
+                            <i class="ph ph-user-check"></i>
+                            <span id="membro-tag-nome"></span>
+                            <button type="button" onclick="limparMembro()" title="Remover">&#x2715;</button>
+                        </div>
+
+                        <span class="cg-anonimo-badge" id="anonimo-hint">
+                            <i class="ph ph-ghost"></i> Sem seleção = entrada anônima
+                        </span>
                     </div>
 
+                    <!-- Valor + Data -->
                     <div class="cg-form-row">
                         <div class="cg-form-group">
                             <label class="cg-form-label">Valor (R$)</label>
@@ -48,9 +78,9 @@
                         </div>
                     </div>
 
+                    <!-- Tipo -->
                     <div class="cg-form-group">
                         <label class="cg-form-label">Tipo de Entrada</label>
-                        {# FIX: valores em maiúsculo para bater com CATEGORIA_CHOICES do model #}
                         <select name="tipo" class="cg-select cg-input" required>
                             <option value="DIZIMO">Dízimo</option>
                             <option value="OFERTA">Oferta</option>
@@ -60,16 +90,17 @@
                         </select>
                     </div>
 
+                    <!-- Ocasião -->
                     <div class="cg-form-group">
                         <label class="cg-form-label">Ocasião</label>
                         <div class="cg-radio-group">
-                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_culto" value="culto" checked>
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_culto"   value="culto"  checked>
                             <label class="cg-radio-label" for="ocasiao_culto">Culto</label>
 
-                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_celula" value="celula">
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_celula"  value="celula">
                             <label class="cg-radio-label" for="ocasiao_celula">Célula</label>
 
-                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_evento" value="evento">
+                            <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_evento"  value="evento">
                             <label class="cg-radio-label" for="ocasiao_evento">Evento</label>
 
                             <input type="radio" class="cg-radio-input" name="ocasiao" id="ocasiao_atipico" value="atipico">
@@ -79,14 +110,14 @@
                     </div>
 
                     <button type="submit" class="cg-btn-primary cg-submit-btn">
-                        Registrar Lançamento
+                        <i class="ph ph-check-circle"></i> Registrar Lançamento
                     </button>
                 </form>
             </div>
         </div>
     </div>
 
-    {# Histórico de registros #}
+    <!-- HISTÓRICO -->
     <div class="cg-activity-section">
         <div class="cg-card">
             <div class="cg-card-header">
@@ -99,7 +130,16 @@
                         <div class="cg-activity-info">
                             <div class="cg-activity-name">{{ mov.descricao }}</div>
                             <div class="cg-activity-meta">
-                                {{ mov.data|date:"d/m/Y" }} • {{ mov.get_categoria_display }}
+                                {{ mov.data|date:"d/m/Y" }}
+                                • {{ mov.get_categoria_display }}
+                                {% if mov.membro %}
+                                    • <i class="ph ph-user" style="font-size:11px;"></i> {{ mov.membro.nome }}
+                                {% else %}
+                                    • <i class="ph ph-ghost" style="font-size:11px;"></i> Anônimo
+                                {% endif %}
+                                {% if mov.autorizado_por %}
+                                    • <i class="ph ph-shield-check" style="font-size:11px;color:#10b981;"></i> {{ mov.autorizado_por.nome_solicitante }}
+                                {% endif %}
                             </div>
                         </div>
 
@@ -122,17 +162,10 @@
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
-{# JS só para mostrar/esconder textarea de justificativa quando "Atípico" é selecionado #}
-<script>
-    document.querySelectorAll('input[name="ocasiao"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            const textarea = document.getElementById('cg-justificativa');
-            textarea.classList.toggle('cg-hidden', this.value !== 'atipico');
-        });
-    });
-</script>
+<script src="{% static 'assets/js/financeiro/movimentacoes.js' %}"></script>
 {% endblock %}

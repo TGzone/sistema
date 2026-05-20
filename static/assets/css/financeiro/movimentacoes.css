@@ -420,3 +420,81 @@
 .cg-no-results:hover {
     background: transparent;
 }
+/* ── Autocomplete de Membro ─────────────────────────────────────────────── */
+
+.cg-membro-wrapper {
+    position: relative;
+}
+
+.cg-membro-results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: var(--card-bg, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 10px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+}
+
+.cg-membro-results.active { display: block; }
+
+.cg-membro-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background .15s;
+    font-size: 13px;
+}
+
+.cg-membro-option:hover { background: rgba(255,255,255,.06); }
+
+.cg-membro-option .avatar {
+    width: 28px; height: 28px;
+    background: var(--primary, #6366f1);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+}
+
+.cg-membro-option .info strong { display: block; font-weight: 600; }
+.cg-membro-option .info span   { color: var(--text-muted, #94a3b8); font-size: 11px; }
+
+.cg-membro-tag {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(99,102,241,.12);
+    border: 1px solid rgba(99,102,241,.3);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary, #6366f1);
+}
+
+.cg-membro-tag.visible { display: flex; }
+
+.cg-membro-tag button {
+    background: none; border: none; cursor: pointer;
+    color: inherit; margin-left: auto; font-size: 16px; line-height: 1;
+    opacity: .7;
+}
+
+.cg-membro-tag button:hover { opacity: 1; }
+
+.cg-anonimo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted, #94a3b8);
+    margin-top: 4px;
+}
