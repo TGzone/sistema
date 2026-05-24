@@ -1,0 +1,490 @@
+/* ═══════════════════════════════════════════════════════════
+   pagamento_pix.css — Página pública de contribuição PIX
+   Estética: dark refinado, coerente com o sistema
+   ═══════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --pix-bg:        #0a0f1a;
+    --pix-surface:   #111827;
+    --pix-border:    rgba(255,255,255,0.08);
+    --pix-accent:    #3b82f6;
+    --pix-accent-2:  #10b981;
+    --pix-danger:    #ef4444;
+    --pix-text:      #f1f5f9;
+    --pix-muted:     #64748b;
+    --pix-sub:       #94a3b8;
+    --pix-radius:    20px;
+    --pix-font-head: 'Syne', sans-serif;
+    --pix-font-body: 'DM Sans', sans-serif;
+}
+
+body {
+    background: var(--pix-bg);
+    color: var(--pix-text);
+    font-family: var(--pix-font-body);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ── Background decorativo ── */
+.pix-bg-grid {
+    position: fixed;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.pix-bg-glow {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ── Shell ── */
+.pix-shell {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* ── Header ── */
+.pix-header {
+    text-align: center;
+    padding: 0.5rem 0;
+}
+
+.pix-church-logo {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--pix-accent), #6366f1);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.6rem;
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(59,130,246,0.35);
+}
+
+.pix-church-name {
+    font-family: var(--pix-font-head);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+}
+
+.pix-church-sub {
+    font-size: 0.82rem;
+    color: var(--pix-muted);
+}
+
+/* ── Card ── */
+.pix-card {
+    background: var(--pix-surface);
+    border: 1px solid var(--pix-border);
+    border-radius: var(--pix-radius);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeUp 0.35s ease both;
+}
+
+.pix-card--hidden {
+    display: none;
+}
+
+.pix-card--success {
+    align-items: center;
+    text-align: center;
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Step label ── */
+.pix-step-label {
+    font-family: var(--pix-font-head);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--pix-accent);
+    border-bottom: 1px solid var(--pix-border);
+    padding-bottom: 0.75rem;
+}
+
+/* ── Tipo grid ── */
+.pix-tipo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.pix-tipo-item { display: contents; }
+
+.pix-tipo-item input[type="radio"] { display: none; }
+
+.pix-tipo-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.85rem 0.4rem;
+    border: 1px solid var(--pix-border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--pix-sub);
+    background: rgba(255,255,255,0.02);
+}
+
+.pix-tipo-box i {
+    font-size: 1.3rem;
+}
+
+.pix-tipo-item input:checked + .pix-tipo-box {
+    border-color: var(--pix-accent);
+    background: rgba(59,130,246,0.1);
+    color: var(--pix-text);
+    box-shadow: 0 0 0 1px var(--pix-accent);
+}
+
+/* ── Valor ── */
+.pix-valor-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--pix-border);
+    border-radius: 14px;
+    padding: 0.6rem 1.25rem;
+    transition: border-color 0.2s;
+}
+
+.pix-valor-wrap:focus-within {
+    border-color: var(--pix-accent);
+}
+
+.pix-valor-prefix {
+    font-family: var(--pix-font-head);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--pix-muted);
+}
+
+.pix-valor-input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--pix-text);
+    font-family: var(--pix-font-head);
+    font-size: 2rem;
+    font-weight: 700;
+    width: 100%;
+    letter-spacing: -0.03em;
+}
+
+.pix-valor-input::placeholder { color: rgba(255,255,255,0.15); }
+
+.pix-valor-input::-webkit-outer-spin-button,
+.pix-valor-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+/* ── Chips rápidos ── */
+.pix-valores-rapidos {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pix-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--pix-border);
+    border-radius: 20px;
+    color: var(--pix-sub);
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.35rem 0.85rem;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.pix-chip:hover,
+.pix-chip.active {
+    background: rgba(59,130,246,0.15);
+    border-color: var(--pix-accent);
+    color: var(--pix-text);
+}
+
+/* ── Campo nome ── */
+.pix-field-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.pix-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--pix-sub);
+}
+
+.pix-optional {
+    font-weight: 400;
+    color: var(--pix-muted);
+    font-size: 0.75rem;
+}
+
+.pix-input {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--pix-border);
+    border-radius: 10px;
+    color: var(--pix-text);
+    font-family: var(--pix-font-body);
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.pix-input:focus { border-color: var(--pix-accent); }
+.pix-input::placeholder { color: var(--pix-muted); }
+
+/* ── Botão gerar ── */
+.pix-btn-gerar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: var(--pix-accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--pix-font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+}
+
+.pix-btn-gerar:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(59,130,246,0.35);
+}
+
+.pix-btn-gerar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.pix-btn-gerar i { font-size: 1.2rem; }
+
+/* ── Aviso seguro ── */
+.pix-seguro-aviso {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--pix-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+
+/* ── QR Summary ── */
+.pix-qr-summary {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--pix-border);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem;
+    color: var(--pix-sub);
+    text-align: center;
+}
+
+.pix-qr-summary strong { color: var(--pix-text); }
+
+/* ── QR Frame ── */
+.pix-qr-frame {
+    position: relative;
+    width: 220px;
+    height: 220px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pix-qr-frame img {
+    width: 200px;
+    height: 200px;
+    border-radius: 8px;
+    display: block;
+}
+
+.pix-qr-corner {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-color: var(--pix-accent);
+    border-style: solid;
+}
+
+.pix-qr-corner--tl { top: 0; left: 0; border-width: 3px 0 0 3px; border-radius: 4px 0 0 0; }
+.pix-qr-corner--tr { top: 0; right: 0; border-width: 3px 3px 0 0; border-radius: 0 4px 0 0; }
+.pix-qr-corner--bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; border-radius: 0 0 0 4px; }
+.pix-qr-corner--br { bottom: 0; right: 0; border-width: 0 3px 3px 0; border-radius: 0 0 4px 0; }
+
+/* ── Status bar ── */
+.pix-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    color: var(--pix-sub);
+}
+
+.pix-status-bar.is-ok {
+    color: var(--pix-accent-2);
+}
+
+.pix-pulse {
+    width: 8px;
+    height: 8px;
+    background: var(--pix-accent);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    flex-shrink: 0;
+}
+
+.is-ok .pix-pulse {
+    background: var(--pix-accent-2);
+    animation: none;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── Copy code ── */
+.pix-copy-wrap {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pix-copy-input {
+    flex: 1;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--pix-border);
+    border-radius: 10px;
+    color: var(--pix-muted);
+    font-size: 0.7rem;
+    padding: 0.6rem 0.8rem;
+    outline: none;
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pix-copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--pix-border);
+    border-radius: 10px;
+    color: var(--pix-sub);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+}
+
+.pix-copy-btn:hover {
+    background: rgba(59,130,246,0.1);
+    border-color: var(--pix-accent);
+    color: var(--pix-text);
+}
+
+/* ── Botão voltar ── */
+.pix-btn-voltar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    background: none;
+    border: 1px solid var(--pix-border);
+    border-radius: 10px;
+    color: var(--pix-muted);
+    font-size: 0.82rem;
+    padding: 0.65rem;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.pix-btn-voltar:hover {
+    border-color: var(--pix-sub);
+    color: var(--pix-text);
+}
+
+/* ── Sucesso ── */
+.pix-success-icon {
+    font-size: 4rem;
+    color: var(--pix-accent-2);
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.5); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.pix-success-title {
+    font-family: var(--pix-font-head);
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.pix-success-msg {
+    color: var(--pix-sub);
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ── Responsivo mobile ── */
+@media (max-width: 480px) {
+    .pix-card { padding: 1.5rem; }
+    .pix-tipo-grid { grid-template-columns: repeat(2, 1fr); }
+    .pix-valor-input { font-size: 1.6rem; }
+}

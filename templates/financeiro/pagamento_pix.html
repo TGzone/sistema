@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contribuir via PIX | {{ igreja.nome|default:"Lumina Gestão" }}</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="{% static 'assets/css/financeiro/pagamento_pix.css' %}">
+</head>
+<body>
+
+    <div class="pix-bg-grid"></div>
+    <div class="pix-bg-glow"></div>
+
+    <main class="pix-shell">
+
+        <!-- CABEÇALHO -->
+        <header class="pix-header">
+            <div class="pix-church-logo">
+                <i class="ph ph-cross"></i>
+            </div>
+            <h1 class="pix-church-name">{{ igreja.nome|default:"Igreja Central" }}</h1>
+            <p class="pix-church-sub">Contribuição online segura via PIX</p>
+        </header>
+
+        <!-- STEP 1: FORMULÁRIO -->
+        <section class="pix-card" id="step-form">
+            <div class="pix-step-label">01 — Sua contribuição</div>
+
+            <div class="pix-tipo-grid">
+                <label class="pix-tipo-item">
+                    <input type="radio" name="tipo" value="DIZIMO" checked>
+                    <span class="pix-tipo-box">
+                        <i class="ph ph-hand-coins"></i>
+                        <span>Dízimo</span>
+                    </span>
+                </label>
+                <label class="pix-tipo-item">
+                    <input type="radio" name="tipo" value="OFERTA">
+                    <span class="pix-tipo-box">
+                        <i class="ph ph-heart"></i>
+                        <span>Oferta</span>
+                    </span>
+                </label>
+                <label class="pix-tipo-item">
+                    <input type="radio" name="tipo" value="MISSIONARIA">
+                    <span class="pix-tipo-box">
+                        <i class="ph ph-globe-hemisphere-west"></i>
+                        <span>Missões</span>
+                    </span>
+                </label>
+                <label class="pix-tipo-item">
+                    <input type="radio" name="tipo" value="AVULSA">
+                    <span class="pix-tipo-box">
+                        <i class="ph ph-buildings"></i>
+                        <span>Construção</span>
+                    </span>
+                </label>
+            </div>
+
+            <div class="pix-valor-wrap">
+                <span class="pix-valor-prefix">R$</span>
+                <input
+                    id="inputValor"
+                    class="pix-valor-input"
+                    type="number"
+                    min="1"
+                    step="0.01"
+                    placeholder="0,00"
+                >
+            </div>
+
+            <div class="pix-valores-rapidos">
+                <button class="pix-chip" data-v="20">R$ 20</button>
+                <button class="pix-chip" data-v="50">R$ 50</button>
+                <button class="pix-chip" data-v="100">R$ 100</button>
+                <button class="pix-chip" data-v="200">R$ 200</button>
+                <button class="pix-chip" data-v="500">R$ 500</button>
+            </div>
+
+            <div class="pix-field-group">
+                <label class="pix-label">Seu nome <span class="pix-optional">(opcional)</span></label>
+                <input id="inputNome" class="pix-input" type="text" placeholder="Como prefere ser chamado...">
+            </div>
+
+            <button class="pix-btn-gerar" id="btnGerar">
+                <i class="ph ph-qr-code"></i>
+                Gerar PIX
+            </button>
+
+            <p class="pix-seguro-aviso">
+                <i class="ph ph-shield-check"></i>
+                Transação segura · Processado pelo Banco Central
+            </p>
+        </section>
+
+        <!-- STEP 2: QR CODE -->
+        <section class="pix-card pix-card--hidden" id="step-qr">
+            <div class="pix-step-label">02 — Escaneie e pague</div>
+
+            <div class="pix-qr-summary" id="qrSummary"></div>
+
+            <div class="pix-qr-frame" id="qrFrame">
+                <img id="qrImg" src="" alt="QR Code PIX">
+                <div class="pix-qr-corner pix-qr-corner--tl"></div>
+                <div class="pix-qr-corner pix-qr-corner--tr"></div>
+                <div class="pix-qr-corner pix-qr-corner--bl"></div>
+                <div class="pix-qr-corner pix-qr-corner--br"></div>
+            </div>
+
+            <div class="pix-status-bar" id="pixStatusBar">
+                <span class="pix-pulse"></span>
+                <span id="pixStatusText">Aguardando pagamento...</span>
+            </div>
+
+            <div class="pix-copy-wrap">
+                <input id="pixCodeInput" class="pix-copy-input" type="text" readonly>
+                <button class="pix-copy-btn" id="btnCopiar">
+                    <i class="ph ph-copy"></i>
+                    Copiar
+                </button>
+            </div>
+
+            <button class="pix-btn-voltar" id="btnVoltar">
+                <i class="ph ph-arrow-left"></i> Nova contribuição
+            </button>
+        </section>
+
+        <!-- STEP 3: CONFIRMADO -->
+        <section class="pix-card pix-card--hidden pix-card--success" id="step-ok">
+            <div class="pix-success-icon">
+                <i class="ph ph-check-circle"></i>
+            </div>
+            <h2 class="pix-success-title">Recebido!</h2>
+            <p class="pix-success-msg" id="okMsg"></p>
+            <button class="pix-btn-gerar" id="btnNovaContrib">
+                <i class="ph ph-plus-circle"></i>
+                Nova contribuição
+            </button>
+        </section>
+
+    </main>
+
+    <script>
+        const IGREJA_ID = "{{ igreja.id|default:'' }}";
+    </script>
+    <script src="{% static 'assets/js/financeiro/pagamento_pix.js' %}"></script>
+</body>
+</html>
