@@ -12,21 +12,20 @@
 
 <main class="pix-shell">
 
-    <!-- ── HEADER ─────────────────────────────── -->
+    <!-- ── HEADER ── -->
     <header class="pix-header">
         <div class="pix-logo"><i class="ph ph-cross"></i></div>
         <h1 class="pix-church-name">{{ igreja.nome|default:"Igreja Central" }}</h1>
         <p class="pix-church-sub">Contribuição segura via PIX</p>
     </header>
 
-    <!-- ── STEP 1: FORMULÁRIO ─────────────────── -->
+    <!-- ── STEP 1: FORMULÁRIO ── -->
     <section class="pix-card" id="step-form">
 
         <p class="pix-intro">
             Escolha o tipo de contribuição e o valor. Qualquer quantia a partir de R$ 1,00 é bem-vinda.
         </p>
 
-        <!-- Tipo de contribuição -->
         <div class="pix-tipo-grid">
             <label class="pix-tipo-item">
                 <input type="radio" name="tipo" value="DIZIMO" checked>
@@ -46,7 +45,6 @@
             </label>
         </div>
 
-        <!-- Valor -->
         <div class="pix-valor-wrap">
             <span class="pix-valor-currency">R$</span>
             <input id="inputValor" class="pix-valor-input"
@@ -61,16 +59,12 @@
             <button class="pix-chip" data-v="500">R$ 500</button>
         </div>
 
-        <!-- Dados do contribuinte -->
         <div class="pix-field">
-            <label class="pix-label">Seu nome <span class="pix-optional"></span></label>
+            <label class="pix-label">Seu nome <span class="pix-optional">(opcional)</span></label>
             <input id="inputNome" class="pix-input" type="text"
                    placeholder="Como prefere ser chamado...">
         </div>
 
-    
-
-        <!-- CTA -->
         <button class="pix-btn-primary" id="btnGerar">
             <i class="ph ph-arrow-right"></i>
             Gerar PIX
@@ -82,12 +76,12 @@
         </p>
     </section>
 
-    <!-- ── STEP 2: QR CODE ────────────────────── -->
+    <!-- ── STEP 2: QR CODE ── -->
     <section class="pix-card pix-card--hidden" id="step-qr">
 
         <div class="pix-qr-summary" id="qrSummary"></div>
 
-        <!-- QR Code (desktop) -->
+        <!-- QR Code — só aparece em desktop -->
         <div class="pix-qr-frame-wrap" id="qrFrameWrap" style="display:none;">
             <div class="pix-qr-frame">
                 <img id="qrImg" src="" alt="QR Code PIX">
@@ -96,16 +90,14 @@
             <div class="pix-divider">ou copie o código</div>
         </div>
 
-        <!-- Label mobile -->
+        <!-- Em mobile só o label do código -->
         <div class="pix-divider" id="mobileLabel" style="display:none;">Copie o código PIX</div>
 
-        <!-- Status -->
         <div class="pix-status-bar" id="statusBar">
             <span class="pix-pulse"></span>
             <span id="statusText">Aguardando pagamento...</span>
         </div>
 
-        <!-- Copia e Cola -->
         <div class="pix-copy-wrap">
             <input id="pixCodeInput" class="pix-copy-input" type="text" readonly>
             <button class="pix-copy-btn" id="btnCopiar">
@@ -118,7 +110,7 @@
         </button>
     </section>
 
-    <!-- ── STEP 3: CONFIRMADO ─────────────────── -->
+    <!-- ── STEP 3: CONFIRMADO ── -->
     <section class="pix-card pix-card--hidden pix-card--success" id="step-ok">
         <div class="pix-success-icon"><i class="ph ph-check-circle"></i></div>
         <h2 class="pix-success-title">Recebido!</h2>
@@ -135,49 +127,42 @@
 </main>
 
 <script>
-/* ═══════════════════════════════════════════════════════
-   pagamento_pix.js  —  integrado inline no template
-   ═══════════════════════════════════════════════════════ */
+// ── Config ────────────────────────────────────────────────
+const IGREJA_ID       = "{{ igreja.id|default:'' }}";
+const API_GERAR       = "{% url 'financeiro:api_gerar_pix' %}";
+const API_STATUS_BASE = "/financeiro/api/status-pix/";
+const POLLING_INTERVAL = 5000;
+const POLLING_MAX      = 72;   // 72 × 5s = 6 min
 
-// ── Config ──────────────────────────────────────────────
-const IGREJA_ID        = "{{ igreja.id|default:'' }}";
-const API_GERAR        = "{% url 'financeiro:api_gerar_pix' %}";
-const API_STATUS_BASE  = "/financeiro/api/status-pix/";   // + pagamento_id + /
-const POLLING_INTERVAL = 5000;   // ms
-const POLLING_MAX      = 72;     // 72 × 5s = 6 min
-
-// ── Estado ──────────────────────────────────────────────
-let pollingTimer  = null;
-let pollingCount  = 0;
+// ── Estado ────────────────────────────────────────────────
+let pollingTimer   = null;
+let pollingCount   = 0;
 let pagamentoAtual = {};
 
 const isMobile = () => /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
-// ── Elementos ───────────────────────────────────────────
-const stepForm   = document.getElementById('step-form');
-const stepQr     = document.getElementById('step-qr');
-const stepOk     = document.getElementById('step-ok');
+// ── Elementos que EXISTEM no HTML ─────────────────────────
+const stepForm  = document.getElementById('step-form');
+const stepQr    = document.getElementById('step-qr');
+const stepOk    = document.getElementById('step-ok');
 
-const inputValor    = document.getElementById('inputValor');
-const inputNome     = document.getElementById('inputNome');
-const inputCpf      = document.getElementById('inputCpf');
-const inputEmail    = document.getElementById('inputEmail');
-const inputTelefone = document.getElementById('inputTelefone');
-const btnGerar      = document.getElementById('btnGerar');
-const btnVoltar     = document.getElementById('btnVoltar');
-const btnCopiar     = document.getElementById('btnCopiar');
-const btnNova       = document.getElementById('btnNova');
+const inputValor   = document.getElementById('inputValor');
+const inputNome    = document.getElementById('inputNome');   // único campo de texto
+const btnGerar     = document.getElementById('btnGerar');
+const btnVoltar    = document.getElementById('btnVoltar');
+const btnCopiar    = document.getElementById('btnCopiar');
+const btnNova      = document.getElementById('btnNova');
 
-const qrSummary     = document.getElementById('qrSummary');
-const qrFrameWrap   = document.getElementById('qrFrameWrap');
-const mobileLabel   = document.getElementById('mobileLabel');
-const qrImg         = document.getElementById('qrImg');
-const pixCodeInput  = document.getElementById('pixCodeInput');
-const statusBar     = document.getElementById('statusBar');
-const statusText    = document.getElementById('statusText');
-const okReceipt     = document.getElementById('okReceipt');
+const qrSummary    = document.getElementById('qrSummary');
+const qrFrameWrap  = document.getElementById('qrFrameWrap');
+const mobileLabel  = document.getElementById('mobileLabel');
+const qrImg        = document.getElementById('qrImg');
+const pixCodeInput = document.getElementById('pixCodeInput');
+const statusBar    = document.getElementById('statusBar');
+const statusText   = document.getElementById('statusText');
+const okReceipt    = document.getElementById('okReceipt');
 
-// ── Helpers ─────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────
 const TIPO_LABEL = {
     DIZIMO:      'Dízimo',
     OFERTA:      'Oferta',
@@ -191,95 +176,83 @@ function showStep(el) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function setStatus(msg, mode = '') {
-    statusBar.className = 'pix-status-bar' + (mode ? ` ${mode}` : '');
+function setStatus(msg, mode) {
+    statusBar.className = 'pix-status-bar' + (mode ? ' ' + mode : '');
     statusText.textContent = msg;
 }
 
 function formatarValor(v) {
-    return `R$ ${parseFloat(v).toFixed(2).replace('.', ',')}`;
+    return 'R$ ' + parseFloat(v).toFixed(2).replace('.', ',');
 }
 
-// Máscara CPF
-inputCpf.addEventListener('input', () => {
-    let v = inputCpf.value.replace(/\D/g, '').slice(0, 11);
-    if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-    else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d+)/, '$1.$2.$3');
-    else if (v.length > 3) v = v.replace(/(\d{3})(\d+)/, '$1.$2');
-    inputCpf.value = v;
-});
-
-// Máscara telefone
-inputTelefone.addEventListener('input', () => {
-    let v = inputTelefone.value.replace(/\D/g, '').slice(0, 11);
-    if (v.length > 10) v = v.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-    else if (v.length > 6) v = v.replace(/(\d{2})(\d{4})(\d+)/, '($1) $2-$3');
-    else if (v.length > 2) v = v.replace(/(\d{2})(\d+)/, '($1) $2');
-    inputTelefone.value = v;
-});
-
-// ── Chips ────────────────────────────────────────────────
-document.querySelectorAll('.pix-chip').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active'));
+// ── Chips de valor ────────────────────────────────────────
+document.querySelectorAll('.pix-chip').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.pix-chip').forEach(function(c) {
+            c.classList.remove('active');
+        });
         btn.classList.add('active');
         inputValor.value = btn.dataset.v;
     });
 });
 
-inputValor.addEventListener('input', () =>
-    document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active')));
+inputValor.addEventListener('input', function() {
+    document.querySelectorAll('.pix-chip').forEach(function(c) {
+        c.classList.remove('active');
+    });
+});
 
-// ── Gerar PIX ────────────────────────────────────────────
-btnGerar.addEventListener('click', async () => {
-    const valor = parseFloat(inputValor.value);
+// ── Gerar PIX ─────────────────────────────────────────────
+btnGerar.addEventListener('click', async function() {
+    var valor = parseFloat(inputValor.value);
     if (!valor || valor < 1) {
         inputValor.focus();
         inputValor.style.borderColor = '#ef4444';
-        setTimeout(() => inputValor.style.borderColor = '', 1500);
+        setTimeout(function() { inputValor.style.borderColor = ''; }, 1500);
         return;
     }
 
-    const tipo     = document.querySelector('input[name="tipo"]:checked')?.value || 'OFERTA';
-    const nome     = inputNome.value.trim();
-    const cpf      = inputCpf.value.replace(/\D/g, '');
-    const email    = inputEmail.value.trim();
-    const telefone = inputTelefone.value.replace(/\D/g, '');
+    var tipo = (document.querySelector('input[name="tipo"]:checked') || {}).value || 'OFERTA';
+    var nome = inputNome.value.trim();
 
-    // Feedback loading
+    // Loading
     btnGerar.disabled = true;
-    btnGerar.innerHTML = '<i class="ph ph-circle-notch" style="animation:spin 0.8s linear infinite"></i> Gerando...';
+    btnGerar.innerHTML = '<i class="ph ph-circle-notch" style="animation:spin .8s linear infinite"></i> Gerando...';
 
     try {
-        const res = await fetch(API_GERAR, {
+        var res = await fetch(API_GERAR, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ valor, tipo, nome, cpf, email, telefone, igreja_id: IGREJA_ID }),
+            body:    JSON.stringify({
+                valor:     valor,
+                tipo:      tipo,
+                nome:      nome,
+                // cpf/email/telefone ausentes do form → backend usa defaults
+                igreja_id: IGREJA_ID
+            })
         });
 
-        const data = await res.json();
+        var data = await res.json();
 
         if (!res.ok) {
             alert(data.error || 'Erro ao gerar PIX. Tente novamente.');
             return;
         }
 
-        // Salva estado atual
+        // Salva estado
         pagamentoAtual = {
-            id: data.pagamento_id,
-            valor,
-            tipo,
-            nome: nome || 'Anônimo',
+            id:    data.pagamento_id,
+            valor: valor,
+            tipo:  tipo,
+            nome:  nome || 'Anônimo'
         };
 
-        // Preenche summary
-        const tipoLabel = TIPO_LABEL[tipo] || 'Contribuição';
-        qrSummary.innerHTML = `
-            <strong>${pagamentoAtual.nome}</strong> · ${tipoLabel}<br>
-            <strong style="font-size:1.05rem">${formatarValor(valor)}</strong>
-        `;
+        // Preenche resumo
+        qrSummary.innerHTML =
+            '<strong>' + pagamentoAtual.nome + '</strong> · ' + (TIPO_LABEL[tipo] || 'Contribuição') + '<br>' +
+            '<strong style="font-size:1.05rem">' + formatarValor(valor) + '</strong>';
 
-        // QR Code ou só código, dependendo do dispositivo
+        // QR Code e código
         pixCodeInput.value = data.pix_code;
         qrImg.src = data.qr_code_url;
 
@@ -296,6 +269,7 @@ btnGerar.addEventListener('click', async () => {
         iniciarPolling(data.pagamento_id);
 
     } catch (err) {
+        console.error('Erro PIX:', err);
         alert('Erro de rede. Verifique sua conexão e tente novamente.');
     } finally {
         btnGerar.disabled = false;
@@ -303,41 +277,40 @@ btnGerar.addEventListener('click', async () => {
     }
 });
 
-// ── Copiar código ────────────────────────────────────────
-btnCopiar.addEventListener('click', () => {
-    navigator.clipboard.writeText(pixCodeInput.value).then(() => {
+// ── Copiar código ─────────────────────────────────────────
+btnCopiar.addEventListener('click', function() {
+    navigator.clipboard.writeText(pixCodeInput.value).then(function() {
         btnCopiar.classList.add('copied');
         btnCopiar.innerHTML = '<i class="ph ph-check"></i> Copiado!';
-        setTimeout(() => {
+        setTimeout(function() {
             btnCopiar.classList.remove('copied');
             btnCopiar.innerHTML = '<i class="ph ph-copy"></i> Copiar';
         }, 2500);
     });
 });
 
-// ── Voltar ───────────────────────────────────────────────
-btnVoltar.addEventListener('click', () => {
+// ── Voltar / Nova contribuição ────────────────────────────
+btnVoltar.addEventListener('click', function() {
     pararPolling();
     showStep(stepForm);
 });
 
-btnNova.addEventListener('click', () => {
+btnNova.addEventListener('click', function() {
     pararPolling();
     inputValor.value = '';
     inputNome.value  = '';
-    inputCpf.value   = '';
-    inputEmail.value = '';
-    inputTelefone.value = '';
-    document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.pix-chip').forEach(function(c) {
+        c.classList.remove('active');
+    });
     showStep(stepForm);
 });
 
-// ── Polling ──────────────────────────────────────────────
+// ── Polling ───────────────────────────────────────────────
 function iniciarPolling(pagamentoId) {
     pollingCount = 0;
     pararPolling();
 
-    pollingTimer = setInterval(async () => {
+    pollingTimer = setInterval(async function() {
         pollingCount++;
 
         if (pollingCount >= POLLING_MAX) {
@@ -347,8 +320,8 @@ function iniciarPolling(pagamentoId) {
         }
 
         try {
-            const res  = await fetch(`${API_STATUS_BASE}${pagamentoId}/`);
-            const data = await res.json();
+            var res  = await fetch(API_STATUS_BASE + pagamentoId + '/');
+            var data = await res.json();
 
             if (data.status === 'approved') {
                 pararPolling();
@@ -370,26 +343,24 @@ function pararPolling() {
     }
 }
 
-// ── Confirmação ──────────────────────────────────────────
+// ── Confirmação ───────────────────────────────────────────
 function confirmarPagamento() {
     setStatus('Pagamento confirmado!', 'is-confirmed');
 
-    const tipoLabel = TIPO_LABEL[pagamentoAtual.tipo] || 'Contribuição';
-    okReceipt.innerHTML = `
-        <strong>Tipo:</strong> ${tipoLabel}<br>
-        <strong>Valor:</strong> ${formatarValor(pagamentoAtual.valor)}<br>
-        <strong>Nome:</strong> ${pagamentoAtual.nome}<br>
-        <strong>Protocolo:</strong> ${pagamentoAtual.id.slice(0, 12).toUpperCase()}<br>
-        <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}
-    `;
+    okReceipt.innerHTML =
+        '<strong>Tipo:</strong> ' + (TIPO_LABEL[pagamentoAtual.tipo] || 'Contribuição') + '<br>' +
+        '<strong>Valor:</strong> ' + formatarValor(pagamentoAtual.valor) + '<br>' +
+        '<strong>Nome:</strong> ' + pagamentoAtual.nome + '<br>' +
+        '<strong>Protocolo:</strong> ' + pagamentoAtual.id.slice(0, 12).toUpperCase() + '<br>' +
+        '<strong>Data:</strong> ' + new Date().toLocaleString('pt-BR');
 
-    setTimeout(() => showStep(stepOk), 700);
+    setTimeout(function() { showStep(stepOk); }, 700);
 }
 
-// ── CSS spin inline ──────────────────────────────────────
-const style = document.createElement('style');
-style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-document.head.appendChild(style);
+// ── Animação do spinner ───────────────────────────────────
+var s = document.createElement('style');
+s.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(s);
 </script>
 
 </body>
