@@ -1,213 +1,189 @@
-/**
- * pagamento_pix.js
- * Controla o fluxo: Formulário → QR → Polling → Confirmação
- */
+// ─── Config ────────────────────────────────────────────────────
+// Substitua com sua chave PIX e URL do webhook n8n
+const CHAVE_PIX   = "00020126330014br.gov.bcb.pix0111999999999995204000053039865802BR5913Igreja Central6009SAO PAULO62070503***6304ABCD"; // payload real aqui
+const N8N_WEBHOOK = "https://seu-n8n.exemplo.com/webhook/pix-confirmado";
+const IGREJA_ID   = "";
 
-// ── Elementos ─────────────────────────────────────────────────
-const stepForm = document.getElementById('step-form');
-const stepQr   = document.getElementById('step-qr');
-const stepOk   = document.getElementById('step-ok');
+// ─── Estado ────────────────────────────────────────────────────
+let pollingTimer = null;
+let dadosPagamento = {};
 
+const isMobile = () => /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+// ─── Elementos ─────────────────────────────────────────────────
+const stepForm  = document.getElementById('step-form');
+const stepQr    = document.getElementById('step-qr');
+const stepOk    = document.getElementById('step-ok');
+
+const inputValor    = document.getElementById('inputValor');
+const inputNome     = document.getElementById('inputNome');
 const btnGerar      = document.getElementById('btnGerar');
-const btnCopiar     = document.getElementById('btnCopiar');
 const btnVoltar     = document.getElementById('btnVoltar');
-const btnNovaContrib = document.getElementById('btnNovaContrib');
+const btnCopiar     = document.getElementById('btnCopiar');
+const btnNova       = document.getElementById('btnNova');
 
-const inputValor = document.getElementById('inputValor');
-const inputNome  = document.getElementById('inputNome');
+const qrSummary     = document.getElementById('qrSummary');
+const qrFrameWrap   = document.getElementById('qrFrameWrap');
+const mobileLabel   = document.getElementById('mobileLabel');
+const qrImg         = document.getElementById('qrImg');
+const pixCodeInput  = document.getElementById('pixCodeInput');
+const statusBar     = document.getElementById('statusBar');
+const statusText    = document.getElementById('statusText');
+const okReceipt     = document.getElementById('okReceipt');
 
-const qrImg        = document.getElementById('qrImg');
-const qrSummary    = document.getElementById('qrSummary');
-const pixCodeInput = document.getElementById('pixCodeInput');
-const pixStatusBar = document.getElementById('pixStatusBar');
-const pixStatusText = document.getElementById('pixStatusText');
-const okMsg        = document.getElementById('okMsg');
-
-// ── Estado ────────────────────────────────────────────────────
-let pollingInterval = null;
-let currentPagamentoId = null;
-
-// ── Chips de valor rápido ─────────────────────────────────────
-document.querySelectorAll('.pix-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-        document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        inputValor.value = chip.dataset.v;
+// ─── Chips de valor ────────────────────────────────────────────
+document.querySelectorAll('.chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        inputValor.value = btn.dataset.v;
     });
 });
 
-// Desativa chip se usuário digitar valor manualmente
 inputValor.addEventListener('input', () => {
-    document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
 });
 
-// ── Tipo selecionado ──────────────────────────────────────────
-function getTipo() {
-    const checked = document.querySelector('input[name="tipo"]:checked');
-    return checked ? checked.value : 'OFERTA';
-}
-
-// ── Gerar PIX ─────────────────────────────────────────────────
-btnGerar.addEventListener('click', async () => {
+// ─── Gerar PIX ─────────────────────────────────────────────────
+btnGerar.addEventListener('click', () => {
     const valor = parseFloat(inputValor.value);
-    if (!valor || valor < 1) {
-        shake(inputValor.closest('.pix-valor-wrap'));
+    if (!valor || valor <= 0) {
+        inputValor.focus();
         return;
     }
 
-    btnGerar.disabled = true;
-    btnGerar.innerHTML = '<i class="ph ph-spinner"></i> Gerando...';
+    const tipo = document.querySelector('input[name="tipo"]:checked')?.value || 'OFERTA';
+    const nome = inputNome.value.trim() || 'Anônimo';
+    const txId = 'TX' + Date.now();
 
-    try {
-        const res = await fetch('/financeiro/api/gerar-pix/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                valor:     valor,
-                tipo:      getTipo(),
-                nome:      inputNome.value.trim() || 'Contribuinte Anônimo',
-                igreja_id: IGREJA_ID || null,
-            }),
-        });
+    dadosPagamento = { valor, tipo, nome, txId, timestamp: new Date().toISOString() };
 
-        const data = await res.json();
+    // Summary
+    const tipoLabel = { DIZIMO: 'Dízimo', OFERTA: 'Oferta', MISSIONARIA: 'Oferta Missionária', AVULSA: 'Construção' }[tipo];
+    qrSummary.innerHTML = `<strong>${nome}</strong> · ${tipoLabel}<br>
+        <strong style="font-size:1.1rem">R$ ${valor.toFixed(2).replace('.', ',')}</strong>`;
 
-        if (!res.ok || data.error) {
-            alert(data.error || 'Erro ao gerar PIX. Tente novamente.');
-            btnGerar.disabled = false;
-            btnGerar.innerHTML = '<i class="ph ph-qr-code"></i> Gerar PIX';
+    // Código PIX (em produção, gere dinamicamente no backend com o valor real)
+    pixCodeInput.value = CHAVE_PIX;
+
+    // QR Code via API pública (google charts — substitua por geração no backend)
+    const qrData = encodeURIComponent(CHAVE_PIX);
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?data=${qrData}&size=200x200&margin=10`;
+
+    // Desktop = mostra QR; Mobile = só código
+    if (isMobile()) {
+        mobileLabel.style.display = 'flex';
+        qrFrameWrap.style.display = 'none';
+    } else {
+        qrFrameWrap.style.display = 'flex';
+        mobileLabel.style.display = 'none';
+    }
+
+    showStep(stepQr);
+    iniciarPolling(txId, valor, nome, tipo);
+});
+
+// ─── Copiar ────────────────────────────────────────────────────
+btnCopiar.addEventListener('click', () => {
+    navigator.clipboard.writeText(pixCodeInput.value).then(() => {
+        btnCopiar.classList.add('copied');
+        btnCopiar.innerHTML = '<i class="ph ph-check"></i> Copiado!';
+        setTimeout(() => {
+            btnCopiar.classList.remove('copied');
+            btnCopiar.innerHTML = '<i class="ph ph-copy"></i> Copiar';
+        }, 2500);
+    });
+});
+
+// ─── Voltar ────────────────────────────────────────────────────
+btnVoltar.addEventListener('click', () => {
+    clearPolling();
+    showStep(stepForm);
+});
+
+btnNova.addEventListener('click', () => {
+    inputValor.value = '';
+    inputNome.value = '';
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    showStep(stepForm);
+});
+
+// ─── Polling — checa confirmação no n8n ───────────────────────
+function iniciarPolling(txId, valor, nome, tipo) {
+    let tentativas = 0;
+    const maxTentativas = 60; // 5 min
+
+    pollingTimer = setInterval(async () => {
+        tentativas++;
+        if (tentativas > maxTentativas) {
+            clearPolling();
+            statusText.textContent = 'Tempo esgotado. Tente novamente.';
             return;
         }
 
-        currentPagamentoId = data.pagamento_id;
+        try {
+            // Consulta o n8n para saber se o pagamento foi confirmado
+            // O n8n recebe o webhook do banco/PSP e registra o txId
+            const res = await fetch(`${N8N_WEBHOOK}/status?txId=${txId}&igrejaId=${IGREJA_ID}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-        // Preenche UI
-        qrImg.src           = data.qr_code_url;
-        pixCodeInput.value  = data.pix_code;
-        qrSummary.innerHTML = `
-            <strong>${labelTipo(getTipo())}</strong> · 
-            R$ ${valor.toFixed(2).replace('.', ',')} · 
-            ${inputNome.value.trim() || 'Anônimo'}
-        `;
-
-        // Troca de step
-        mostrarStep(stepQr);
-        iniciarPolling();
-
-    } catch (err) {
-        alert('Erro de conexão. Verifique sua internet.');
-        btnGerar.disabled = false;
-        btnGerar.innerHTML = '<i class="ph ph-qr-code"></i> Gerar PIX';
-    }
-});
-
-// ── Copiar código PIX ─────────────────────────────────────────
-btnCopiar.addEventListener('click', () => {
-    navigator.clipboard.writeText(pixCodeInput.value).then(() => {
-        btnCopiar.innerHTML = '<i class="ph ph-check"></i> Copiado!';
-        setTimeout(() => {
-            btnCopiar.innerHTML = '<i class="ph ph-copy"></i> Copiar';
-        }, 2000);
-    });
-});
-
-// ── Voltar ────────────────────────────────────────────────────
-btnVoltar.addEventListener('click', resetar);
-btnNovaContrib.addEventListener('click', resetar);
-
-function resetar() {
-    pararPolling();
-    currentPagamentoId = null;
-    inputValor.value   = '';
-    inputNome.value    = '';
-    document.querySelectorAll('.pix-chip').forEach(c => c.classList.remove('active'));
-
-    btnGerar.disabled = false;
-    btnGerar.innerHTML = '<i class="ph ph-qr-code"></i> Gerar PIX';
-
-    pixStatusBar.classList.remove('is-ok');
-    pixStatusText.textContent = 'Aguardando pagamento...';
-
-    mostrarStep(stepForm);
-}
-
-// ── Polling de status ─────────────────────────────────────────
-function iniciarPolling() {
-    pararPolling();
-    pollingInterval = setInterval(verificarStatus, 5000);
-}
-
-function pararPolling() {
-    if (pollingInterval) {
-        clearInterval(pollingInterval);
-        pollingInterval = null;
-    }
-}
-
-async function verificarStatus() {
-    if (!currentPagamentoId) return;
-
-    try {
-        const res  = await fetch(`/financeiro/api/status-pix/${currentPagamentoId}/`);
-        const data = await res.json();
-
-        if (data.status === 'approved') {
-            pararPolling();
-            confirmar();
+            if (res.ok) {
+                const data = await res.json();
+                if (data.confirmado) {
+                    clearPolling();
+                    confirmarPagamento(data, valor, nome, tipo);
+                }
+            }
+        } catch (e) {
+            // silencioso — continua tentando
         }
-    } catch (_) {
-        // Silencia erros de rede no polling
-    }
+    }, 5000); // checa a cada 5s
 }
 
-// ── Confirmação ───────────────────────────────────────────────
-function confirmar() {
-    const valor = parseFloat(inputValor.value).toFixed(2).replace('.', ',');
-    const tipo  = labelTipo(getTipo());
-    const nome  = inputNome.value.trim() || 'Anônimo';
-
-    okMsg.textContent = `R$ ${valor} de ${tipo} recebido. Obrigado, ${nome}! Que Deus abençoe.`;
-    mostrarStep(stepOk);
+function clearPolling() {
+    if (pollingTimer) clearInterval(pollingTimer);
+    pollingTimer = null;
 }
 
-// ── Helpers ───────────────────────────────────────────────────
-function mostrarStep(el) {
+// ─── Confirmar pagamento ───────────────────────────────────────
+function confirmarPagamento(data, valor, nome, tipo) {
+    statusBar.classList.add('confirmed');
+    statusText.textContent = 'Pagamento confirmado!';
+
+    const tipoLabel = { DIZIMO: 'Dízimo', OFERTA: 'Oferta', MISSIONARIA: 'Oferta Missionária', AVULSA: 'Construção' }[tipo];
+
+    okReceipt.innerHTML = `
+        <strong>Tipo:</strong> ${tipoLabel}<br>
+        <strong>Valor:</strong> R$ ${valor.toFixed(2).replace('.', ',')}<br>
+        <strong>Nome:</strong> ${nome}<br>
+        <strong>Protocolo:</strong> ${data.txId || dadosPagamento.txId}<br>
+        <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}
+    `;
+
+    // Notificar n8n → IA → sistema (POST com dados completos)
+    fetch(`${N8N_WEBHOOK}/registrar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            txId: dadosPagamento.txId,
+            igrejaId: IGREJA_ID,
+            valor,
+            nome,
+            tipo,
+            timestamp: dadosPagamento.timestamp,
+            confirmadoEm: new Date().toISOString()
+        })
+    }).catch(() => {});
+
+    setTimeout(() => showStep(stepOk), 800);
+}
+
+// ─── Navegação ─────────────────────────────────────────────────
+function showStep(target) {
     [stepForm, stepQr, stepOk].forEach(s => {
-        s.classList.add('pix-card--hidden');
-        s.style.display = 'none';
+        s.classList.toggle('card--hidden', s !== target);
     });
-    el.classList.remove('pix-card--hidden');
-    el.style.display = 'flex';
-    // Re-trigger animation
-    el.style.animation = 'none';
-    el.offsetHeight;
-    el.style.animation = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-
-function shake(el) {
-    el.style.animation = 'none';
-    el.offsetHeight;
-    el.style.animation = 'shake 0.4s ease';
-    el.addEventListener('animationend', () => { el.style.animation = ''; }, { once: true });
-}
-
-function labelTipo(tipo) {
-    return {
-        DIZIMO:      'Dízimo',
-        OFERTA:      'Oferta',
-        MISSIONARIA: 'Oferta Missionária',
-        AVULSA:      'Fundo de Construção',
-    }[tipo] || 'Contribuição';
-}
-
-// ── CSS de shake injetado dinamicamente ──────────────────────
-const style = document.createElement('style');
-style.textContent = `
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%       { transform: translateX(-8px); }
-    40%       { transform: translateX(8px); }
-    60%       { transform: translateX(-5px); }
-    80%       { transform: translateX(5px); }
-}`;
-document.head.appendChild(style);

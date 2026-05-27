@@ -131,3 +131,4 @@ SESSION_COOKIE_SECURE = False      # False em desenvolvimento
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_SECURE = False         # False em desenvolvimento
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+MERCADO_PAGO_TOKEN = os.getenv('MP_ACCESS_TOKEN', '')

@@ -5,6 +5,8 @@ from django.conf import settings
 from django.utils import timezone
 
 
+
+
 class Movimentacao(models.Model):
     TIPO_CHOICES = [('ENTRADA', 'Entrada'), ('SAIDA', 'Saída')]
     CATEGORIA_CHOICES = [
@@ -108,3 +110,85 @@ class DadosBancarios(models.Model):
 
     def __str__(self):
         return f"{self.banco} — {self.igreja.nome}"
+
+        # financeiro/models.py
+# ─── Adicione esta classe ao seu models.py existente ───────────────────────
+
+
+
+class PagamentoPix(models.Model):
+    """
+    Armazena cada cobrança PIX gerada via Mercado Pago.
+    Conecta com o n8n através do `mp_pagamento_id`.
+    """
+
+    STATUS_CHOICES = [
+        ('pending',     'Aguardando pagamento'),
+        ('approved',    'Aprovado'),
+        ('cancelled',   'Cancelado'),
+        ('rejected',    'Rejeitado'),
+        ('refunded',    'Estornado'),
+    ]
+
+    TIPO_CHOICES = [
+        ('DIZIMO',      'Dízimo'),
+        ('OFERTA',      'Oferta'),
+        ('MISSIONARIA', 'Oferta Missionária'),
+        ('AVULSA',      'Construção / Infraestrutura'),
+    ]
+
+    # --- Vínculo com a Igreja ---
+    igreja = models.ForeignKey(
+        'igrejas.Igreja',
+        on_delete=models.CASCADE,
+        related_name='pagamentos_pix',
+    )
+
+    # --- Dados do MP (preenchidos na geração) ---
+    mp_pagamento_id = models.CharField(
+        max_length=64,
+        unique=True,
+        db_index=True,
+        verbose_name='ID Mercado Pago',
+        help_text='Chave que o n8n usa para identificar o pagamento.',
+    )
+    pix_code = models.TextField(
+        verbose_name='Código Copia e Cola',
+    )
+    pix_qr_base64 = models.TextField(
+        verbose_name='QR Code (base64)',
+    )
+
+    # --- Dados da transação ---
+    tipo        = models.CharField(max_length=20, choices=TIPO_CHOICES, default='OFERTA')
+    valor       = models.DecimalField(max_digits=10, decimal_places=2)
+    status      = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # --- Dados do pagador (capturados no formulário) ---
+    pagador_nome      = models.CharField(max_length=150, blank=True, default='')
+    pagador_email     = models.EmailField(blank=True, default='')
+    pagador_cpf       = models.CharField(max_length=11, blank=True, default='', verbose_name='CPF (só números)')
+    pagador_telefone  = models.CharField(max_length=20, blank=True, default='')
+
+    # --- Controle ---
+    criado_em     = models.DateTimeField(default=timezone.now)
+    confirmado_em = models.DateTimeField(null=True, blank=True)
+
+    # --- Movimentação gerada após confirmação (evita duplicação) ---
+    movimentacao = models.OneToOneField(
+        'financeiro.Movimentacao',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='pagamento_pix_origem',
+    )
+
+    class Meta:
+        ordering = ['-criado_em']
+        verbose_name = 'Pagamento PIX'
+        verbose_name_plural = 'Pagamentos PIX'
+
+    def __str__(self):
+        return f"[{self.mp_pagamento_id}] R$ {self.valor} — {self.get_status_display()}"
+
+    def get_tipo_label(self):
+        return dict(self.TIPO_CHOICES).get(self.tipo, 'Contribuição')

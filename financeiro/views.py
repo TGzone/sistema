@@ -5,9 +5,7 @@ import os
 import uuid
 import base64
 import io
-
 import qrcode
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Sum
 from django.utils import timezone
@@ -16,12 +14,27 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
-
 from .models import Movimentacao, Obrigacao, Manutencao, DadosBancarios
 from igrejas.models import Igreja
 from pessoas.models import Pessoa
 from usuarios.permissoes import perfil_requerido, PERFIS_GERENCIAIS
-
+import json
+import uuid
+import re
+import logging
+from decimal import Decimal
+import requests
+from django.conf import settings
+from django.shortcuts import render
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+ 
+from .models import PagamentoPix, Movimentacao
+from igrejas.models import Igreja
+ 
+logger = logging.getLogger(__name__)
+ 
 
 # ─────────────────────────────────────────────────────────────
 # HELPERS
@@ -492,3 +505,321 @@ def _salvar_movimentacao_pix(pagamento_id, nome, valor, tipo, igreja):
         origem_whatsapp = False,
         # autorizado_por fica None — contribuição pública não tem usuário logado
     )
+    # financeiro/views.py (adições/substituições — seções 10 a 13)
+# ────────────────────────────────────────────────────────────────────────────
+# Cole estas funções substituindo as seções 10–13 do seu views.py atual.
+# As demais views (movimentacoes, contas, banco…) permanecem inalteradas.
+# ────────────────────────────────────────────────────────────────────────────
+
+
+# ── Constantes ───────────────────────────────────────────────────────────────
+MP_PAYMENTS_URL = 'https://api.mercadopago.com/v1/payments'
+MP_TIMEOUT      = 15   # segundos
+
+
+# ─────────────────────────────────────────────────────────────
+# HELPERS PRIVADOS
+# ─────────────────────────────────────────────────────────────
+
+def _mp_headers(idempotency_key: str | None = None) -> dict:
+    """
+    Monta os headers obrigatórios da API do Mercado Pago.
+    Lê o token de settings.MERCADO_PAGO_TOKEN.
+    """
+    headers = {
+        'Authorization':  f"Bearer {settings.MERCADO_PAGO_TOKEN}",
+        'Content-Type':   'application/json',
+        'X-Idempotency-Key': idempotency_key or str(uuid.uuid4()),
+    }
+    return headers
+
+
+def _cpf_limpo(cpf: str) -> str:
+    """Remove tudo que não for dígito."""
+    return re.sub(r'\D', '', cpf or '')
+
+
+def _label_tipo(tipo: str) -> str:
+    return {
+        'DIZIMO':      'Dízimo',
+        'OFERTA':      'Oferta',
+        'MISSIONARIA': 'Oferta Missionária',
+        'AVULSA':      'Construção / Infraestrutura',
+    }.get(tipo, 'Contribuição')
+
+
+def _get_igreja_ativa(igreja_id=None) -> Igreja | None:
+    qs = Igreja.objects.filter(status='ATIVO')
+    if igreja_id:
+        return qs.filter(id=igreja_id).first() or qs.first()
+    return qs.first()
+
+
+def _criar_movimentacao(pagamento: PagamentoPix) -> Movimentacao:
+    """Cria a Movimentacao financeira após confirmação do PIX."""
+    categoria = pagamento.tipo if pagamento.tipo in dict(Movimentacao.CATEGORIA_CHOICES) else 'OUTROS'
+    mov = Movimentacao.objects.create(
+        igreja    = pagamento.igreja,
+        tipo      = 'ENTRADA',
+        categoria = categoria,
+        descricao = (
+            f"[PIX:{pagamento.mp_pagamento_id[:8]}] "
+            f"{pagamento.get_tipo_label()} — {pagamento.pagador_nome or 'Anônimo'}"
+        ),
+        valor          = pagamento.valor,
+        origem_whatsapp= False,
+        # autorizado_por = None  (contribuição pública)
+    )
+    return mov
+
+
+# ─────────────────────────────────────────────────────────────
+# 10. PÁGINA PÚBLICA DE PAGAMENTO PIX
+# ─────────────────────────────────────────────────────────────
+
+def pagamento_pix(request):
+    """Pública — qualquer pessoa pode acessar para contribuir."""
+    igreja = _get_igreja_ativa()
+    return render(request, 'financeiro/pagamento_pix.html', {'igreja': igreja})
+
+
+# ─────────────────────────────────────────────────────────────
+# 11. API — GERAR COBRANÇA PIX (Mercado Pago — Produção)
+# ─────────────────────────────────────────────────────────────
+
+@csrf_exempt
+@require_POST
+def api_gerar_pix(request):
+    """
+    POST /financeiro/api/gerar-pix/
+
+    Body JSON esperado:
+    {
+        "nome":      "João Silva",
+        "email":     "joao@email.com",
+        "cpf":       "123.456.789-09",   ← com ou sem formatação
+        "telefone":  "11999999999",       ← opcional
+        "valor":     50.00,
+        "tipo":      "DIZIMO",
+        "igreja_id": 1                    ← opcional
+    }
+
+    Retorna:
+    {
+        "pagamento_id": "...",
+        "pix_code":     "...",
+        "qr_code_url":  "data:image/png;base64,..."
+    }
+    """
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido.'}, status=400)
+
+    # ── Validações ──────────────────────────────────────────
+    valor = float(body.get('valor', 0))
+    if valor < 1:
+        return JsonResponse({'error': 'Valor mínimo: R$ 1,00.'}, status=400)
+
+    nome  = (body.get('nome') or '').strip() or 'Contribuinte'
+    email = (body.get('email') or '').strip() or 'contribuinte@ziongestao.com'
+    cpf   = _cpf_limpo(body.get('cpf', ''))
+    tipo  = body.get('tipo', 'OFERTA').upper()
+
+    if cpf and len(cpf) != 11:
+        return JsonResponse({'error': 'CPF inválido. Informe 11 dígitos.'}, status=400)
+
+    igreja = _get_igreja_ativa(body.get('igreja_id'))
+    if not igreja:
+        return JsonResponse({'error': 'Nenhuma unidade ativa encontrada.'}, status=400)
+
+    # ── Idempotency key única por requisição ────────────────
+    idempotency_key = str(uuid.uuid4())
+
+    # ── Payload Mercado Pago ────────────────────────────────
+    nome_parts = nome.split()
+    payload = {
+        'transaction_amount': round(valor, 2),
+        'description':        f"{_label_tipo(tipo)} — {igreja.nome}",
+        'payment_method_id':  'pix',
+        'payer': {
+            'email':      email,
+            'first_name': nome_parts[0],
+            'last_name':  ' '.join(nome_parts[1:]) if len(nome_parts) > 1 else '',
+            **(
+                {'identification': {'type': 'CPF', 'number': cpf}}
+                if cpf else {}
+            ),
+        },
+        # Expira em 30 minutos
+        'date_of_expiration': (
+            timezone.now() + timezone.timedelta(minutes=30)
+        ).strftime('%Y-%m-%dT%H:%M:%S.000-03:00'),
+    }
+
+    # ── Chamada à API do Mercado Pago ───────────────────────
+    try:
+        resp = requests.post(
+            MP_PAYMENTS_URL,
+            headers=_mp_headers(idempotency_key),
+            json=payload,
+            timeout=MP_TIMEOUT,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.Timeout:
+        logger.error('Timeout na API do Mercado Pago.')
+        return JsonResponse({'error': 'Timeout na API de pagamento. Tente novamente.'}, status=504)
+    except requests.HTTPError as exc:
+        logger.error('MP HTTP Error: %s — %s', exc.response.status_code, exc.response.text)
+        return JsonResponse(
+            {'error': f"Erro na API de pagamento ({exc.response.status_code})."},
+            status=502,
+        )
+    except requests.RequestException as exc:
+        logger.exception('Erro de rede ao chamar Mercado Pago: %s', exc)
+        return JsonResponse({'error': 'Falha de rede. Tente novamente.'}, status=502)
+
+    # ── Extrai dados do PIX ─────────────────────────────────
+    if data.get('status') not in ('pending', 'approved'):
+        logger.error('MP status inesperado: %s', data)
+        return JsonResponse({'error': 'Erro ao gerar cobrança PIX.'}, status=500)
+
+    pix_data    = data['point_of_interaction']['transaction_data']
+    pix_code    = pix_data['qr_code']
+    qr_base64   = pix_data['qr_code_base64']
+    mp_id       = str(data['id'])
+
+    # ── Persiste no banco ───────────────────────────────────
+    PagamentoPix.objects.create(
+        igreja          = igreja,
+        mp_pagamento_id = mp_id,
+        pix_code        = pix_code,
+        pix_qr_base64   = qr_base64,
+        tipo            = tipo,
+        valor           = Decimal(str(valor)),
+        status          = data.get('status', 'pending'),
+        pagador_nome     = nome,
+        pagador_email    = email,
+        pagador_cpf      = cpf,
+        pagador_telefone = body.get('telefone', ''),
+    )
+
+    return JsonResponse({
+        'pagamento_id': mp_id,
+        'pix_code':     pix_code,
+        'qr_code_url':  f'data:image/png;base64,{qr_base64}',
+    })
+
+
+# ─────────────────────────────────────────────────────────────
+# 12. API — STATUS DO PAGAMENTO (polling do front-end)
+# ─────────────────────────────────────────────────────────────
+
+def api_status_pix(request, pagamento_id: str):
+    """
+    GET /financeiro/api/status-pix/<pagamento_id>/
+
+    Consulta primeiro no banco local; só chama o MP se ainda pending.
+    Retorna: { "status": "pending" | "approved" | ... }
+    """
+    pagamento = PagamentoPix.objects.filter(mp_pagamento_id=pagamento_id).first()
+
+    if not pagamento:
+        return JsonResponse({'error': 'Pagamento não encontrado.'}, status=404)
+
+    # Já aprovado localmente — retorna sem chamar o MP
+    if pagamento.status == 'approved':
+        return JsonResponse({'status': 'approved'})
+
+    # Consulta o MP para atualizar
+    try:
+        resp = requests.get(
+            f'{MP_PAYMENTS_URL}/{pagamento_id}',
+            headers=_mp_headers(),
+            timeout=MP_TIMEOUT,
+        )
+        resp.raise_for_status()
+        status = resp.json().get('status', 'pending')
+    except requests.RequestException:
+        # Falha silenciosa: devolve o status local atual
+        return JsonResponse({'status': pagamento.status})
+
+    # Atualiza local se mudou
+    if status != pagamento.status:
+        pagamento.status = status
+        if status == 'approved':
+            pagamento.confirmado_em = timezone.now()
+            # Cria a Movimentacao financeira (idempotente via OneToOne)
+            if not pagamento.movimentacao_id:
+                mov = _criar_movimentacao(pagamento)
+                pagamento.movimentacao = mov
+        pagamento.save()
+
+    return JsonResponse({'status': status})
+
+
+# ─────────────────────────────────────────────────────────────
+# 13. WEBHOOK — Mercado Pago + n8n
+# ─────────────────────────────────────────────────────────────
+
+@csrf_exempt
+def webhook_mercadopago(request):
+    """
+    POST /financeiro/webhook/mp/
+
+    O Mercado Pago envia aqui quando o status muda.
+    O n8n (que já recebe o webhook do MP em produção) pode
+    chamar esta mesma rota para confirmar manualmente via POST:
+
+        {
+            "type":   "payment",
+            "action": "payment.updated",
+            "data":   { "id": "<mp_pagamento_id>" }
+        }
+
+    Configure no painel do MP:
+        URL de notificação → https://seudominio.com/financeiro/webhook/mp/
+    """
+    if request.method != 'POST':
+        return JsonResponse({'ok': True})
+
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': True})  # ignora silenciosamente
+
+    if body.get('type') != 'payment' or body.get('action') != 'payment.updated':
+        return JsonResponse({'ok': True})
+
+    mp_id = str(body.get('data', {}).get('id', ''))
+    if not mp_id:
+        return JsonResponse({'ok': True})
+
+    pagamento = PagamentoPix.objects.filter(mp_pagamento_id=mp_id).first()
+    if not pagamento or pagamento.status == 'approved':
+        return JsonResponse({'ok': True})   # já processado ou desconhecido
+
+    # Busca status atualizado no MP para confirmar
+    try:
+        resp = requests.get(
+            f'{MP_PAYMENTS_URL}/{mp_id}',
+            headers=_mp_headers(),
+            timeout=MP_TIMEOUT,
+        )
+        resp.raise_for_status()
+        status = resp.json().get('status', 'pending')
+    except requests.RequestException as exc:
+        logger.exception('Webhook: erro ao consultar MP para id=%s: %s', mp_id, exc)
+        return JsonResponse({'ok': True})
+
+    pagamento.status = status
+    if status == 'approved':
+        pagamento.confirmado_em = timezone.now()
+        if not pagamento.movimentacao_id:
+            mov = _criar_movimentacao(pagamento)
+            pagamento.movimentacao = mov
+        logger.info('PIX aprovado via webhook: %s R$ %s', mp_id, pagamento.valor)
+
+    pagamento.save()
+    return JsonResponse({'ok': True})
