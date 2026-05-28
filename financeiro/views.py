@@ -1,6 +1,6 @@
 # financeiro/views.py  —  VERSÃO DEFINITIVA (limpa, sem duplicatas)
 # ─────────────────────────────────────────────────────────────────────────────
-
+from thefuzz import fuzz
 import json
 import re
 import uuid
@@ -643,3 +643,131 @@ def webhook_mercadopago(request):
 
     pagamento.save()
     return JsonResponse({'ok': True})
+
+# ═══════════════════════════════════════════════════════════════════════════
+# 14. WEBHOOK N8N — Processar PIX público com match inteligente de membros
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Adicione este import junto aos demais no topo do arquivo:
+# from thefuzz import fuzz
+
+from thefuzz import fuzz
+
+FUZZY_THRESHOLD = 80  # score mínimo para considerar match de nome
+
+
+@csrf_exempt
+@require_POST
+def processar_pix_publico(request):
+    """
+    POST /financeiro/webhook/n8n/
+
+    Recebe do n8n os dados de um PIX confirmado e:
+      1. Evita duplicata pelo id_pagamento
+      2. Tenta casar o nome com um Pessoa ativo via fuzzy matching
+      3. Registra Movimentacao vinculada ao membro (se achado) ou anônima
+      4. Marca o PagamentoPix como aprovado (se existir no banco)
+
+    Body JSON esperado:
+        { "nome": "Tiago Aldemino", "valor": 2.00,
+          "tipo": "OFERTA", "id_pagamento": "160507761023" }
+    """
+    try:
+        body = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido.'}, status=400)
+
+    # ── Campos obrigatórios ──────────────────────────────────────────────
+    id_pagamento = str(body.get('id_pagamento', '')).strip()
+    nome_raw     = str(body.get('nome', '') or 'Anônimo').strip()
+    tipo         = str(body.get('tipo', 'OFERTA')).upper()
+    try:
+        valor = Decimal(str(body.get('valor', 0)))
+    except Exception:
+        return JsonResponse({'error': 'Valor inválido.'}, status=400)
+
+    if not id_pagamento:
+        return JsonResponse({'error': 'id_pagamento é obrigatório.'}, status=400)
+    if valor < Decimal('0.01'):
+        return JsonResponse({'error': 'Valor deve ser maior que zero.'}, status=400)
+
+    # ── Trava anti-duplicata ─────────────────────────────────────────────
+    if Movimentacao.objects.filter(descricao__contains=f'[PIX:{id_pagamento[:8]}]').exists():
+        logger.info('processar_pix_publico: id_pagamento %s já processado, ignorando.', id_pagamento)
+        return JsonResponse({'ok': True, 'status': 'duplicate'})
+
+    # ── Igreja ───────────────────────────────────────────────────────────
+    igreja = _get_igreja_ativa()
+    if not igreja:
+        return JsonResponse({'error': 'Nenhuma unidade ativa.'}, status=400)
+
+    # ── Fuzzy match contra Pessoa ─────────────────────────────────────────
+    membro_encontrado = None
+    melhor_score      = 0
+
+    candidatos = Pessoa.objects.filter(unidade=igreja, ativo=True).only('id', 'nome')
+    for candidato in candidatos:
+        score = fuzz.token_set_ratio(nome_raw.lower(), candidato.nome.lower())
+        if score > melhor_score:
+            melhor_score      = score
+            membro_encontrado = candidato
+
+    membro_match = membro_encontrado if melhor_score >= FUZZY_THRESHOLD else None
+
+    logger.info(
+        'processar_pix_publico: nome="%s" melhor_match="%s" score=%d match=%s',
+        nome_raw,
+        membro_encontrado.nome if membro_encontrado else '—',
+        melhor_score,
+        bool(membro_match),
+    )
+
+    # ── Categoria válida ─────────────────────────────────────────────────
+    categorias_validas = dict(Movimentacao.CATEGORIA_CHOICES).keys()
+    categoria = tipo if tipo in categorias_validas else 'OUTROS'
+
+    # ── Descrição diferencia membro identificado de contribuição avulsa ──
+    if membro_match:
+        descricao = (
+            f"[PIX:{id_pagamento[:8]}] "
+            f"{_label_tipo(tipo)} — {membro_match.nome} "
+            f"(match: {melhor_score}%)"
+        )
+    else:
+        # Score baixo ou nome anônimo → salva o nome digitado como anotação
+        descricao = (
+            f"[PIX:{id_pagamento[:8]}] "
+            f"{_label_tipo(tipo)} — visitante/anônimo "
+            f"[nome digitado: {nome_raw}]"
+        )
+
+    # ── Cria Movimentacao ────────────────────────────────────────────────
+    movimentacao = Movimentacao.objects.create(
+        igreja         = igreja,
+        tipo           = 'ENTRADA',
+        categoria      = categoria,
+        descricao      = descricao,
+        valor          = valor,
+        data           = timezone.now().date(),
+        membro         = membro_match,   # None se não identificado
+        origem_whatsapp= False,
+        # autorizado_por = None  (contribuição pública, sem usuário logado)
+    )
+
+    # ── Sincroniza PagamentoPix se existir ───────────────────────────────
+    pagamento = PagamentoPix.objects.filter(mp_pagamento_id=id_pagamento).first()
+    if pagamento and pagamento.status != 'approved':
+        pagamento.status        = 'approved'
+        pagamento.confirmado_em = timezone.now()
+        if not pagamento.movimentacao_id:
+            pagamento.movimentacao = movimentacao
+        pagamento.save()
+
+    return JsonResponse({
+        'ok':           True,
+        'status':       'created',
+        'movimentacao': movimentacao.id,
+        'membro_id':    membro_match.id   if membro_match else None,
+        'membro_nome':  membro_match.nome if membro_match else None,
+        'score':        melhor_score,
+    })

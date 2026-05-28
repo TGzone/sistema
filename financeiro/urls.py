@@ -33,4 +33,5 @@ urlpatterns = [
     path('api/gerar-pix/',                      views.api_gerar_pix,       name='api_gerar_pix'),
     path('api/status-pix/<str:pagamento_id>/',  views.api_status_pix,      name='api_status_pix'),
     path('webhook/mp/',                         views.webhook_mercadopago, name='webhook_mp'),
+    path('webhook/n8n/', views.processar_pix_publico, name='webhook_n8n'), 
 ]
